@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Ft.App.Views.ConnectionDialog"
+        Title="Port Settings"
+        Width="420" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <Border Classes="card" Margin="14" Padding="18">
+    <StackPanel Spacing="12">
+      <TextBlock Text="Serial connection" Classes="sectionTitle" />
+
+      <StackPanel>
+        <DockPanel>
+          <Button DockPanel.Dock="Right" x:Name="RefreshButton" Click="OnRefreshClick"
+                  Padding="8,4" Margin="8,0,0,0" ToolTip.Tip="Rescan ports">
+            <PathIcon Data="{StaticResource IconRefresh}" Width="13" Height="13" />
+          </Button>
+          <TextBlock Classes="fieldLabel" Text="Port" />
+        </DockPanel>
+        <ComboBox x:Name="PortCombo" HorizontalAlignment="Stretch" />
+      </StackPanel>
+
+      <Grid ColumnDefinitions="*,12,*">
+        <StackPanel Grid.Column="0">
+          <TextBlock Classes="fieldLabel" Text="Baud rate (custom allowed)" />
+          <TextBox x:Name="BaudBox" Text="115200" />
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+          <TextBlock Classes="fieldLabel" Text="Parity" />
+          <ComboBox x:Name="ParityCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+            <ComboBoxItem>None</ComboBoxItem>
+            <ComboBoxItem>Odd</ComboBoxItem>
+            <ComboBoxItem>Even</ComboBoxItem>
+            <ComboBoxItem>Mark</ComboBoxItem>
+            <ComboBoxItem>Space</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,12,*,12,*">
+        <StackPanel Grid.Column="0">
+          <TextBlock Classes="fieldLabel" Text="Data bits" />
+          <ComboBox x:Name="DataBitsCombo" HorizontalAlignment="Stretch" SelectedIndex="3">
+            <ComboBoxItem>5</ComboBoxItem>
+            <ComboBoxItem>6</ComboBoxItem>
+            <ComboBoxItem>7</ComboBoxItem>
+            <ComboBoxItem>8</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+          <TextBlock Classes="fieldLabel" Text="Stop bits" />
+          <ComboBox x:Name="StopBitsCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+            <ComboBoxItem>1</ComboBoxItem>
+            <ComboBoxItem>1.5</ComboBoxItem>
+            <ComboBoxItem>2</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Column="4">
+          <TextBlock Classes="fieldLabel" Text="Flow control" />
+          <ComboBox x:Name="FlowCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+            <ComboBoxItem>None</ComboBoxItem>
+            <ComboBoxItem>XOn/XOff</ComboBoxItem>
+            <ComboBoxItem>RTS/CTS</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
+      </Grid>
+
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <CheckBox x:Name="DtrCheck" Content="DTR" />
+        <CheckBox x:Name="RtsCheck" Content="RTS" />
+      </StackPanel>
+
+      <TextBlock x:Name="ErrorText" Classes="error" IsVisible="False" />
+
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Content="Cancel" Click="OnCancelClick" />
+        <Button Classes="accent" Click="OnConnectClick">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <PathIcon Data="{StaticResource IconLink}" />
+            <TextBlock Text="Connect" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

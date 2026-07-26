@@ -1,10 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Ft.App.ViewModels"
         x:Class="Ft.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Title="FrameTerm"
         Icon="/Assets/app.ico"
         Width="1280" Height="760"
         MinWidth="980" MinHeight="600">
+  <Window.Styles>
+    <Style Selector="WrapPanel#ToolbarPanel > :is(Control)">
+      <Setter Property="Margin" Value="0,3,6,3" />
+    </Style>
+  </Window.Styles>
   <DockPanel Margin="16">
 
     <!-- Top bar card -->
@@ -14,9 +21,40 @@
                 Background="{StaticResource CardBrush}">
           <TextBlock Text="FrameTerm" FontWeight="SemiBold" FontSize="14" />
         </Border>
-        <TextBlock DockPanel.Dock="Right" Text="Disconnected" Classes="muted"
+        <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionStatus}" Classes="muted"
                    VerticalAlignment="Center" Margin="12,0,6,0" />
-        <WrapPanel Margin="12,0,0,0" VerticalAlignment="Center" />
+        <WrapPanel x:Name="ToolbarPanel" Margin="12,0,0,0" VerticalAlignment="Center">
+          <Button x:Name="ConnectButton" Classes="accent" Click="OnConnectClick"
+                  IsEnabled="{Binding !IsConnected}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconLink}" />
+              <TextBlock Text="Connect" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconLinkOff}" />
+              <TextBlock Text="Disconnect" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <ToggleButton IsChecked="{Binding IsDemoMode, Mode=OneWay}"
+                        Command="{Binding ToggleDemoCommand}"
+                        ToolTip.Tip="Run without hardware: echo transport + sample protocol">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconChip}" />
+              <TextBlock Text="Demo" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+          <ComboBox ItemsSource="{Binding BytesPerRowOptions}"
+                    SelectedIndex="{Binding BytesPerRowIndex}"
+                    VerticalAlignment="Center" MinWidth="130" />
+          <Button Command="{Binding ClearDumpCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconTrash}" />
+              <TextBlock Text="Clear" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </WrapPanel>
       </DockPanel>
     </Border>
 
@@ -30,14 +68,61 @@
           <Image Source="/Assets/nexys-logo.png" Height="14" VerticalAlignment="Center"
                  RenderOptions.BitmapInterpolationMode="HighQuality" />
         </StackPanel>
-        <TextBlock Text="Not connected" Classes="muted" />
+        <StackPanel Orientation="Horizontal" Spacing="18">
+          <TextBlock Text="{Binding PortSummary}" Classes="muted" />
+          <TextBlock Text="{Binding StatsText}" Classes="muted" />
+          <TextBlock Text="{Binding LastError}" Classes="error" />
+        </StackPanel>
       </DockPanel>
     </Border>
 
-    <!-- Placeholder workspace card (filled in from M5) -->
+    <!-- Dual hex+ASCII dump card -->
     <Border Classes="card" Padding="14">
-      <TextBlock Text="FrameTerm workbench UI arrives in M5." Classes="muted"
-                 HorizontalAlignment="Center" VerticalAlignment="Center" />
+      <DockPanel>
+        <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
+          <StackPanel Orientation="Horizontal" Spacing="24">
+            <TextBlock Text="Raw stream" Classes="sectionTitle" VerticalAlignment="Center" />
+            <TextBlock Text="time · dir · offset · hex · ascii" Classes="muted"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+        </Border>
+        <DockPanel>
+          <Border DockPanel.Dock="Bottom" MinHeight="22" Padding="8,2">
+            <StackPanel Orientation="Horizontal" Spacing="14"
+                        IsVisible="{Binding PartialRow, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Time}" />
+              <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Dir}"
+                         Foreground="{Binding PartialRow.Brush}" />
+              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Offset}" />
+              <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Hex}"
+                         Foreground="{Binding PartialRow.Brush}" />
+              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Ascii}" />
+            </StackPanel>
+          </Border>
+          <ListBox x:Name="DumpList" ItemsSource="{Binding DumpRows}" Padding="4"
+                   ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DumpRowViewModel">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Time}" />
+                  <TextBlock Classes="mono" FontSize="12" Text="{Binding Dir}"
+                             Foreground="{Binding Brush}" />
+                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Offset}" />
+                  <TextBlock Classes="mono" FontSize="12" Text="{Binding Hex}"
+                             Foreground="{Binding Brush}" />
+                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Ascii}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.Styles>
+              <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="4,1" />
+                <Setter Property="MinHeight" Value="0" />
+              </Style>
+            </ListBox.Styles>
+          </ListBox>
+        </DockPanel>
+      </DockPanel>
     </Border>
 
   </DockPanel>
