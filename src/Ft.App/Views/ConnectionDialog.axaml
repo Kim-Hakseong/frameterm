@@ -7,8 +7,32 @@
         CanResize="False">
   <Border Classes="card" Margin="14" Padding="18">
     <StackPanel Spacing="12">
-      <TextBlock Text="Serial connection" Classes="sectionTitle" />
+      <TextBlock Text="Connection" Classes="sectionTitle" />
 
+      <StackPanel>
+        <TextBlock Classes="fieldLabel" Text="Mode" />
+        <ComboBox x:Name="ModeCombo" HorizontalAlignment="Stretch" SelectedIndex="0"
+                  SelectionChanged="OnModeChanged">
+          <ComboBoxItem>Serial port</ComboBoxItem>
+          <ComboBoxItem>TCP client</ComboBoxItem>
+          <ComboBoxItem>TCP server (listen)</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+
+      <StackPanel x:Name="TcpPanel" IsVisible="False">
+        <Grid ColumnDefinitions="2*,12,*">
+          <StackPanel Grid.Column="0">
+            <TextBlock Classes="fieldLabel" Text="Host (client mode)" />
+            <TextBox x:Name="HostBox" Text="127.0.0.1" />
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Classes="fieldLabel" Text="TCP port" />
+            <TextBox x:Name="TcpPortBox" Text="5000" />
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+
+      <StackPanel x:Name="SerialPanel">
       <StackPanel>
         <DockPanel>
           <Button DockPanel.Dock="Right" x:Name="RefreshButton" Click="OnRefreshClick"
@@ -68,6 +92,7 @@
       <StackPanel Orientation="Horizontal" Spacing="16">
         <CheckBox x:Name="DtrCheck" Content="DTR" />
         <CheckBox x:Name="RtsCheck" Content="RTS" />
+      </StackPanel>
       </StackPanel>
 
       <TextBlock x:Name="ErrorText" Classes="error" IsVisible="False" />

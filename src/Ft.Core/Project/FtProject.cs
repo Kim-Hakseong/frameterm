@@ -20,6 +20,20 @@ public sealed class FtProject
     public List<FieldConfig> Fields { get; set; } = [];
     public List<HighlightConfig> Highlights { get; set; } = [];
     public List<MacroConfig> Macros { get; set; } = [];
+    public List<AutoRespondConfig> AutoResponds { get; set; } = [];
+
+    /// <summary>Build runtime auto-respond rules; Fail on the first invalid rule.</summary>
+    public Result<List<AutoRespondRule>> BuildAutoRespondRules()
+    {
+        var rules = new List<AutoRespondRule>();
+        foreach (var config in AutoResponds)
+        {
+            var built = config.Build();
+            if (!built.IsOk) return Result<List<AutoRespondRule>>.Fail(built.Error);
+            rules.Add(built.Value);
+        }
+        return Result<List<AutoRespondRule>>.Ok(rules);
+    }
 
     /// <summary>Build runtime pipeline config; Fail lists the first invalid setting.</summary>
     public Result<PipelineConfig> BuildPipelineConfig(ITimeSource time)
@@ -260,4 +274,29 @@ public sealed class MacroConfig
     public string Name { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
     public string Hotkey { get; set; } = string.Empty;
+}
+
+public sealed class AutoRespondConfig
+{
+    /// <summary>RX frame byte pattern, e.g. "A5 01 ??".</summary>
+    public string Pattern { get; set; } = string.Empty;
+    /// <summary>Composer expression to send back.</summary>
+    public string Response { get; set; } = string.Empty;
+    public int DelayMs { get; set; }
+
+    public Result<AutoRespondRule> Build()
+    {
+        var pattern = BytePattern.Parse(Pattern);
+        if (!pattern.IsOk) return Result<AutoRespondRule>.Fail($"Auto-respond pattern: {pattern.Error}");
+        if (string.IsNullOrWhiteSpace(Response))
+        {
+            return Result<AutoRespondRule>.Fail("Auto-respond response expression is required.");
+        }
+        return Result<AutoRespondRule>.Ok(new AutoRespondRule
+        {
+            Pattern = pattern.Value,
+            ResponseExpression = Response,
+            DelayMs = DelayMs,
+        });
+    }
 }

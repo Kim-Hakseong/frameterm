@@ -11,6 +11,7 @@ public partial class FrameDefinitionDialog : Window
     private readonly FtProject _project;
     private readonly ObservableCollection<FieldConfig> _fields;
     private readonly ObservableCollection<HighlightConfig> _highlights;
+    private readonly ObservableCollection<AutoRespondConfig> _responds;
 
     /// <summary>True when the user applied a valid configuration.</summary>
     public bool Applied { get; private set; }
@@ -26,8 +27,10 @@ public partial class FrameDefinitionDialog : Window
         _project = project;
         _fields = new ObservableCollection<FieldConfig>(project.Fields);
         _highlights = new ObservableCollection<HighlightConfig>(project.Highlights);
+        _responds = new ObservableCollection<AutoRespondConfig>(project.AutoResponds);
         FieldsGrid.ItemsSource = _fields;
         HighlightsGrid.ItemsSource = _highlights;
+        RespondsGrid.ItemsSource = _responds;
         LoadFromProject();
     }
 
@@ -95,6 +98,14 @@ public partial class FrameDefinitionDialog : Window
     private void OnAddHighlightClick(object? sender, RoutedEventArgs e) =>
         _highlights.Add(new HighlightConfig());
 
+    private void OnAddRespondClick(object? sender, RoutedEventArgs e) =>
+        _responds.Add(new AutoRespondConfig());
+
+    private void OnRemoveRespondClick(object? sender, RoutedEventArgs e)
+    {
+        if (RespondsGrid.SelectedItem is AutoRespondConfig respond) _responds.Remove(respond);
+    }
+
     private void OnRemoveHighlightClick(object? sender, RoutedEventArgs e)
     {
         if (HighlightsGrid.SelectedItem is HighlightConfig highlight) _highlights.Remove(highlight);
@@ -151,6 +162,7 @@ public partial class FrameDefinitionDialog : Window
             },
             Fields = [.. _fields],
             Highlights = [.. _highlights],
+            AutoResponds = [.. _responds],
             Macros = _project.Macros,
         };
 
@@ -160,11 +172,18 @@ public partial class FrameDefinitionDialog : Window
             ShowError(built.Error);
             return;
         }
+        var rules = candidate.BuildAutoRespondRules();
+        if (!rules.IsOk)
+        {
+            ShowError(rules.Error);
+            return;
+        }
 
         _project.Framing = candidate.Framing;
         _project.Checksum = candidate.Checksum;
         _project.Fields = candidate.Fields;
         _project.Highlights = candidate.Highlights;
+        _project.AutoResponds = candidate.AutoResponds;
         Applied = true;
         Close();
     }

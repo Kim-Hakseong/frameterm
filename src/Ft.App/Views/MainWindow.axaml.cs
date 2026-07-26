@@ -22,12 +22,8 @@ public partial class MainWindow : Window
     {
         var dialog = new ConnectionDialog();
         await dialog.ShowDialog(this);
-        if (dialog.Result is not { } settings) return;
-
-        var transport = new SerialTransport(settings);
-        await ViewModel.ConnectWithProjectAsync(
-            transport,
-            $"{settings.PortName} @ {settings.BaudRate}");
+        if (dialog.Transport is not { } transport) return;
+        await ViewModel.ConnectWithProjectAsync(transport, dialog.Summary);
     }
 
     private async void OnFrameDefClick(object? sender, RoutedEventArgs e)

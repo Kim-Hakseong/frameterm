@@ -178,6 +178,33 @@
         </StackPanel>
       </Border>
 
+      <!-- Auto-respond -->
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+              <Button Click="OnAddRespondClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconAdd}" Width="13" Height="13" />
+              </Button>
+              <Button Click="OnRemoveRespondClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconRemove}" Width="13" Height="13" />
+              </Button>
+            </StackPanel>
+            <TextBlock Text="Auto-respond (RX pattern → reply)" Classes="sectionTitle"
+                       VerticalAlignment="Center" />
+          </DockPanel>
+          <DataGrid x:Name="RespondsGrid" AutoGenerateColumns="False" Height="110"
+                    CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="RX pattern" Binding="{Binding Pattern}" Width="*" />
+              <DataGridTextColumn Header="Response expression" Binding="{Binding Response}" Width="*"
+                                  FontFamily="Menlo,Consolas,monospace" />
+              <DataGridTextColumn Header="Delay ms" Binding="{Binding DelayMs}" Width="80" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
       <TextBlock x:Name="ErrorText" Classes="error" IsVisible="False" TextWrapping="Wrap" />
 
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,0,0,8">

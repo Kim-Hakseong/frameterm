@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Ft.App.Services;
 using Ft.Core.Compose;
 using Ft.Core.Dump;
+using Ft.Core.Licensing;
 using Ft.Core.Logging;
 using Ft.Core.Parsing;
 using Ft.Core.Pipeline;
@@ -83,7 +84,46 @@ public partial class MainWindowViewModel : ObservableObject
     private CancellationTokenSource? _repeatCts;
     private RawLogWriter? _logWriter;
     private BytePattern? _compiledFilter;
+    private AutoResponder? _autoResponder;
     private readonly List<FrameRecordViewModel> _allFrames = [];
+
+    /// <summary>
+    /// License verification public key. Skeleton: RFC 8032 test-vector key so
+    /// the whole path is exercisable; replace with the production key (and
+    /// keep the signing seed offline) before selling (M10+).
+    /// </summary>
+    private const string LicensePublicKeyHex =
+        "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
+
+    [ObservableProperty]
+    private string _trialStatusText = string.Empty;
+
+    public MainWindowViewModel()
+    {
+        EvaluateTrial();
+    }
+
+    private void EvaluateTrial()
+    {
+        string dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FrameTerm");
+        string? licenseKey = null;
+        string licensePath = Path.Combine(dir, "license.key");
+        try
+        {
+            if (File.Exists(licensePath)) licenseKey = File.ReadAllText(licensePath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Unreadable license file → treated as unlicensed trial.
+        }
+
+        var manager = new TrialManager(
+            Path.Combine(dir, "trial.dat"),
+            Convert.FromHexString(LicensePublicKeyHex),
+            SystemTimeSource.Instance);
+        TrialStatusText = manager.Evaluate(licenseKey).Detail;
+    }
 
     public ObservableCollection<DumpRowViewModel> DumpRows { get; } = [];
     public ObservableCollection<FrameRecordViewModel> FrameRecords { get; } = [];
@@ -110,11 +150,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         _transport = transport;
-        _pipeline = new RxPipeline(transport, config);
-        _pipeline.BytesFlowed += OnBytesFlowed;
-        _pipeline.FramesReady += OnFramesReady;
-        _pipeline.TransportError += OnTransportError;
-        _pipeline.Start();
+        AttachPipeline(new RxPipeline(transport, config));
 
         IsConnected = true;
         PortSummary = summary;
@@ -130,14 +166,7 @@ public partial class MainWindowViewModel : ObservableObject
         _demoTraffic?.Dispose();
         _demoTraffic = null;
 
-        if (_pipeline is not null)
-        {
-            _pipeline.BytesFlowed -= OnBytesFlowed;
-            _pipeline.FramesReady -= OnFramesReady;
-            _pipeline.TransportError -= OnTransportError;
-            await _pipeline.StopAsync();
-            _pipeline = null;
-        }
+        await DetachPipelineAsync();
         if (_transport is not null)
         {
             await _transport.CloseAsync();
@@ -176,17 +205,58 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
+        await DetachPipelineAsync();
+        AttachPipeline(new RxPipeline(_transport, config.Value));
+        LastError = string.Empty;
+    }
+
+    /// <summary>Subscribe events, build the auto-responder, and start the pipeline.</summary>
+    private void AttachPipeline(RxPipeline pipeline)
+    {
+        _pipeline = pipeline;
+        pipeline.BytesFlowed += OnBytesFlowed;
+        pipeline.FramesReady += OnFramesReady;
+        pipeline.TransportError += OnTransportError;
+
+        var rules = Project.BuildAutoRespondRules();
+        if (!rules.IsOk)
+        {
+            LastError = rules.Error;
+        }
+        else if (rules.Value.Count > 0)
+        {
+            var responder = new AutoResponder(rules.Value, payload => SendOnAsync(pipeline, payload));
+            responder.ComposeFailed += message =>
+                Dispatcher.UIThread.Post(() => LastError = message);
+            pipeline.FramesReady += responder.HandleFrames;
+            _autoResponder = responder;
+        }
+
+        pipeline.Start();
+    }
+
+    private async Task SendOnAsync(RxPipeline pipeline, byte[] payload)
+    {
+        var sent = await pipeline.SendAsync(payload, CancellationToken.None);
+        if (!sent.IsOk)
+        {
+            Dispatcher.UIThread.Post(() => LastError = sent.Error);
+        }
+    }
+
+    private async Task DetachPipelineAsync()
+    {
+        if (_pipeline is null) return;
         _pipeline.BytesFlowed -= OnBytesFlowed;
         _pipeline.FramesReady -= OnFramesReady;
         _pipeline.TransportError -= OnTransportError;
+        if (_autoResponder is not null)
+        {
+            _pipeline.FramesReady -= _autoResponder.HandleFrames;
+            _autoResponder = null;
+        }
         await _pipeline.StopAsync();
-
-        _pipeline = new RxPipeline(_transport, config.Value);
-        _pipeline.BytesFlowed += OnBytesFlowed;
-        _pipeline.FramesReady += OnFramesReady;
-        _pipeline.TransportError += OnTransportError;
-        _pipeline.Start();
-        LastError = string.Empty;
+        _pipeline = null;
     }
 
     /// <summary>Demo mode: echo transport + built-in sample protocol traffic.</summary>

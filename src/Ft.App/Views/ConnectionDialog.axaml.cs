@@ -7,8 +7,11 @@ namespace Ft.App.Views;
 
 public partial class ConnectionDialog : Window
 {
-    /// <summary>Non-null when the user confirmed with valid settings.</summary>
-    public SerialSettings? Result { get; private set; }
+    /// <summary>Ready-to-open transport when the user confirmed valid settings.</summary>
+    public ITransport? Transport { get; private set; }
+
+    /// <summary>Short description for the status bar, e.g. "COM3 @ 115200".</summary>
+    public string Summary { get; private set; } = string.Empty;
 
     public ConnectionDialog()
     {
@@ -25,11 +28,55 @@ public partial class ConnectionDialog : Window
         PortCombo.SelectedIndex = index >= 0 ? index : ports.Length > 0 ? 0 : -1;
     }
 
+    private void OnModeChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (SerialPanel is null) return; // during InitializeComponent
+        int mode = ModeCombo.SelectedIndex;
+        SerialPanel.IsVisible = mode == 0;
+        TcpPanel.IsVisible = mode != 0;
+    }
+
     private void OnRefreshClick(object? sender, RoutedEventArgs e) => RefreshPorts();
 
     private void OnCancelClick(object? sender, RoutedEventArgs e) => Close();
 
     private void OnConnectClick(object? sender, RoutedEventArgs e)
+    {
+        switch (ModeCombo.SelectedIndex)
+        {
+            case 1 or 2:
+            {
+                if (!int.TryParse(TcpPortBox.Text, out int tcpPort) || tcpPort is < 1 or > 65535)
+                {
+                    ShowError("TCP port must be 1..65535.");
+                    return;
+                }
+                if (ModeCombo.SelectedIndex == 1)
+                {
+                    string host = HostBox.Text?.Trim() ?? string.Empty;
+                    if (host.Length == 0)
+                    {
+                        ShowError("Host is required for TCP client mode.");
+                        return;
+                    }
+                    Transport = new TcpClientTransport(host, tcpPort);
+                    Summary = $"tcp://{host}:{tcpPort}";
+                }
+                else
+                {
+                    Transport = new TcpServerTransport(tcpPort);
+                    Summary = $"listen :{tcpPort}";
+                }
+                Close();
+                return;
+            }
+            default:
+                ConnectSerial();
+                return;
+        }
+    }
+
+    private void ConnectSerial()
     {
         if (PortCombo.SelectedItem is not string port || string.IsNullOrWhiteSpace(port))
         {
@@ -42,7 +89,7 @@ public partial class ConnectionDialog : Window
             return;
         }
 
-        Result = new SerialSettings(
+        var settings = new SerialSettings(
             port,
             baud,
             (Parity)ParityCombo.SelectedIndex,
@@ -61,6 +108,8 @@ public partial class ConnectionDialog : Window
             },
             DtrEnable: DtrCheck.IsChecked == true,
             RtsEnable: RtsCheck.IsChecked == true);
+        Transport = new SerialTransport(settings);
+        Summary = $"{settings.PortName} @ {settings.BaudRate}";
         Close();
     }
 
