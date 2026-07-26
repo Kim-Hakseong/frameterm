@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Ft.App.Views.MainWindow"
+        Title="FrameTerm"
+        Icon="/Assets/app.ico"
+        Width="1280" Height="760"
+        MinWidth="980" MinHeight="600">
+  <DockPanel Margin="16">
+
+    <!-- Top bar card -->
+    <Border DockPanel.Dock="Top" Classes="card" Padding="10,8" Margin="0,0,0,12">
+      <DockPanel>
+        <Border DockPanel.Dock="Left" Classes="pill" VerticalAlignment="Center"
+                Background="{StaticResource CardBrush}">
+          <TextBlock Text="FrameTerm" FontWeight="SemiBold" FontSize="14" />
+        </Border>
+        <TextBlock DockPanel.Dock="Right" Text="Disconnected" Classes="muted"
+                   VerticalAlignment="Center" Margin="12,0,6,0" />
+        <WrapPanel Margin="12,0,0,0" VerticalAlignment="Center" />
+      </DockPanel>
+    </Border>
+
+    <!-- Bottom status line + logo/copyright -->
+    <Border DockPanel.Dock="Bottom" Padding="12,8,12,2">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="10"
+                    VerticalAlignment="Center">
+          <TextBlock Text="© 2026 NEXYS Co., Ltd. All rights reserved." Classes="muted"
+                     FontSize="11" VerticalAlignment="Center" />
+          <Image Source="/Assets/nexys-logo.png" Height="14" VerticalAlignment="Center"
+                 RenderOptions.BitmapInterpolationMode="HighQuality" />
+        </StackPanel>
+        <TextBlock Text="Not connected" Classes="muted" />
+      </DockPanel>
+    </Border>
+
+    <!-- Placeholder workspace card (filled in from M5) -->
+    <Border Classes="card" Padding="14">
+      <TextBlock Text="FrameTerm workbench UI arrives in M5." Classes="muted"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Border>
+
+  </DockPanel>
+</Window>
