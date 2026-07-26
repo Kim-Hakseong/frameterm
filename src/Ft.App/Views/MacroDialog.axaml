@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Ft.App.Views.MacroDialog"
+        Title="Macros"
+        Width="560" Height="420"
+        WindowStartupLocation="CenterOwner">
+  <Border Classes="card" Margin="14" Padding="16">
+    <DockPanel>
+      <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+          <Button Click="OnAddClick" Padding="10,4" ToolTip.Tip="Add macro (max 20)">
+            <PathIcon Data="{StaticResource IconAdd}" Width="13" Height="13" />
+          </Button>
+          <Button Click="OnRemoveClick" Padding="10,4">
+            <PathIcon Data="{StaticResource IconRemove}" Width="13" Height="13" />
+          </Button>
+        </StackPanel>
+        <TextBlock Text="Send macros" Classes="sectionTitle" VerticalAlignment="Center" />
+      </DockPanel>
+
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8"
+                  HorizontalAlignment="Right" Margin="0,12,0,0">
+        <Button Content="Cancel" Click="OnCancelClick" />
+        <Button Classes="accent" Click="OnApplyClick">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <PathIcon Data="{StaticResource IconMacro}" />
+            <TextBlock Text="Apply" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+
+      <TextBlock DockPanel.Dock="Bottom" x:Name="ErrorText" Classes="error" IsVisible="False"
+                 TextWrapping="Wrap" />
+
+      <DataGrid x:Name="MacrosGrid" AutoGenerateColumns="False" CanUserReorderColumns="False">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="120" />
+          <DataGridTextColumn Header="Expression" Binding="{Binding Text}" Width="*"
+                              FontFamily="Menlo,Consolas,monospace" />
+          <DataGridTextColumn Header="Hotkey (F1..F12)" Binding="{Binding Hotkey}" Width="120" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </DockPanel>
+  </Border>
+</Window>

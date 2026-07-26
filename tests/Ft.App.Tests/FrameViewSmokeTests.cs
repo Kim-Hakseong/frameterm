@@ -14,17 +14,8 @@ namespace Ft.App.Tests;
 /// </summary>
 public class FrameViewSmokeTests
 {
-    private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 10000)
-    {
-        int elapsed = 0;
-        while (!condition() && elapsed < timeoutMs)
-        {
-            await Task.Delay(50);
-            Dispatcher.UIThread.RunJobs();
-            elapsed += 50;
-        }
-        Assert.True(condition(), "Condition not met within timeout.");
-    }
+    private static Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 10000) =>
+        UiTest.WaitUntilAsync(condition, timeoutMs);
 
     /// <summary>Build a scenario-A frame: 02 | payload | CRC16(coverage) | 03.</summary>
     private static byte[] StxEtxFrame(byte[] payload, bool corrupt = false)
@@ -72,7 +63,7 @@ public class FrameViewSmokeTests
         Assert.Equal("FAIL", vm.FrameRecords[1].ChecksumText);
 
         await vm.DisconnectAsync();
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 
     [AvaloniaFact]
@@ -98,7 +89,7 @@ public class FrameViewSmokeTests
         Assert.Equal("seq", vm.DetailFields[0].Name);
 
         await vm.DisconnectAsync();
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 
     [AvaloniaFact]
@@ -113,6 +104,6 @@ public class FrameViewSmokeTests
         await WaitUntilAsync(() => vm.FrameRecords.Any(f => f.Record.Color == "#9C2030"));
 
         await vm.DisconnectAsync();
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 }

@@ -38,4 +38,24 @@ public partial class MainWindow : Window
             await ViewModel.ApplyProjectAsync();
         }
     }
+
+    private async void OnMacrosClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new MacroDialog(ViewModel.Project);
+        await dialog.ShowDialog(this);
+        if (dialog.Applied)
+        {
+            ViewModel.ReloadMacros();
+        }
+    }
+
+    protected override async void OnKeyDown(Avalonia.Input.KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled) return;
+        if (e.Key is >= Avalonia.Input.Key.F1 and <= Avalonia.Input.Key.F12)
+        {
+            e.Handled = await ViewModel.RunHotkeyMacroAsync(e.Key.ToString());
+        }
+    }
 }

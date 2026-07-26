@@ -51,6 +51,12 @@
               <TextBlock Text="Frame def" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
+          <Button Click="OnMacrosClick" ToolTip.Tip="Manage send macros (20 max, hotkeys)">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconMacro}" />
+              <TextBlock Text="Macros" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
           <ToggleButton IsChecked="{Binding IsRawView}"
                         ToolTip.Tip="Continuous hex dump instead of the frame list">
             <StackPanel Orientation="Horizontal" Spacing="7">
@@ -69,6 +75,56 @@
           </Button>
         </WrapPanel>
       </DockPanel>
+    </Border>
+
+    <!-- Compose bar -->
+    <Border DockPanel.Dock="Bottom" Classes="card" Padding="12,10" Margin="0,12,0,0">
+      <StackPanel Spacing="8">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Classes="accent" Margin="8,0,0,0"
+                  Command="{Binding SendComposedCommand}"
+                  IsEnabled="{Binding IsConnected}" IsDefault="True">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconSend}" />
+              <TextBlock Text="Send" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+            <ToggleButton IsChecked="{Binding RepeatEnabled}" Padding="12,5"
+                          IsEnabled="{Binding IsConnected}"
+                          ToolTip.Tip="Send repeatedly at the given period">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Data="{StaticResource IconRefresh}" Width="13" Height="13" />
+                <TextBlock Text="Repeat" VerticalAlignment="Center" />
+              </StackPanel>
+            </ToggleButton>
+            <TextBox Text="{Binding RepeatMsText}" Width="64" Watermark="ms"
+                     VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBox Text="{Binding ComposeText}"
+                   FontFamily="Menlo,Consolas,monospace"
+                   Watermark="A5 01 {len} &quot;CMD&quot; {crc16}   — hex bytes, &quot;ascii&quot;, {len} {crc16} {crc:PRESET} {sum8} {xor8}" />
+        </DockPanel>
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Right" Text="{Binding ComposeError}" Classes="error"
+                     VerticalAlignment="Center" />
+          <ItemsControl ItemsSource="{Binding Macros}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:MacroViewModel">
+                <Button Margin="0,0,6,0" Padding="10,4" FontSize="12"
+                        Content="{Binding Name}" ToolTip.Tip="{Binding ToolTip}"
+                        Command="{Binding RunCommand}"
+                        CommandParameter="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DockPanel>
+      </StackPanel>
     </Border>
 
     <!-- Bottom status line + logo/copyright -->

@@ -8,17 +8,8 @@ namespace Ft.App.Tests;
 /// <summary>M5 smoke: shell opens, demo mode produces dump rows, disconnect works.</summary>
 public class MainWindowSmokeTests
 {
-    private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 10000)
-    {
-        int elapsed = 0;
-        while (!condition() && elapsed < timeoutMs)
-        {
-            await Task.Delay(50);
-            Dispatcher.UIThread.RunJobs();
-            elapsed += 50;
-        }
-        Assert.True(condition(), "Condition not met within timeout.");
-    }
+    private static Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 10000) =>
+        UiTest.WaitUntilAsync(condition, timeoutMs);
 
     [AvaloniaFact]
     public void Window_Opens_WithDisconnectedState()
@@ -27,7 +18,7 @@ public class MainWindowSmokeTests
         window.Show();
         Assert.False(window.ViewModel.IsConnected);
         Assert.Equal("Disconnected", window.ViewModel.ConnectionStatus);
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 
     [AvaloniaFact]
@@ -47,7 +38,7 @@ public class MainWindowSmokeTests
         await vm.DisconnectAsync();
         Assert.False(vm.IsConnected);
         Assert.False(vm.IsDemoMode);
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 
     [AvaloniaFact]
@@ -64,6 +55,6 @@ public class MainWindowSmokeTests
         vm.ClearDump();
         Assert.Empty(vm.DumpRows);
         Assert.Null(vm.PartialRow);
-        window.Close();
+        UiTest.FlushAndClose(window);
     }
 }

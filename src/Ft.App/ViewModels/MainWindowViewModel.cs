@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Ft.App.Services;
+using Ft.Core.Compose;
 using Ft.Core.Dump;
 using Ft.Core.Pipeline;
 using Ft.Core.Project;
@@ -53,10 +54,25 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private FrameRecordViewModel? _selectedFrame;
 
+    [ObservableProperty]
+    private string _composeText = string.Empty;
+
+    [ObservableProperty]
+    private string _composeError = string.Empty;
+
+    [ObservableProperty]
+    private bool _repeatEnabled;
+
+    [ObservableProperty]
+    private string _repeatMsText = "500";
+
+    private CancellationTokenSource? _repeatCts;
+
     public ObservableCollection<DumpRowViewModel> DumpRows { get; } = [];
     public ObservableCollection<FrameRecordViewModel> FrameRecords { get; } = [];
     public ObservableCollection<DumpRowViewModel> DetailRows { get; } = [];
     public ObservableCollection<FieldDisplay> DetailFields { get; } = [];
+    public ObservableCollection<MacroViewModel> Macros { get; } = [];
     public string[] BytesPerRowOptions { get; } = ["8 bytes/row", "16 bytes/row", "32 bytes/row"];
 
     /// <summary>The editable session project (framing/checksum/fields/highlights/macros).</summary>
@@ -92,6 +108,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public async Task DisconnectAsync()
     {
+        RepeatEnabled = false;
         _demoTraffic?.Dispose();
         _demoTraffic = null;
 
@@ -229,6 +246,86 @@ public partial class MainWindowViewModel : ObservableObject
         if (_pipeline is null) return;
         var sent = await _pipeline.SendAsync(payload, CancellationToken.None);
         if (!sent.IsOk) LastError = sent.Error;
+    }
+
+    /// <summary>Compose the current expression and send it once.</summary>
+    [RelayCommand]
+    public async Task SendComposedAsync()
+    {
+        var payload = PayloadComposer.Compose(ComposeText);
+        if (!payload.IsOk)
+        {
+            ComposeError = payload.Error;
+            return;
+        }
+        ComposeError = string.Empty;
+        await SendAsync(payload.Value);
+    }
+
+    /// <summary>Load a macro into the compose bar and send it.</summary>
+    [RelayCommand]
+    public async Task RunMacroAsync(MacroViewModel macro)
+    {
+        ComposeText = macro.Text;
+        await SendComposedAsync();
+    }
+
+    /// <summary>Fire the macro bound to a hotkey name like "F5", if any.</summary>
+    public async Task<bool> RunHotkeyMacroAsync(string key)
+    {
+        var macro = Macros.FirstOrDefault(m =>
+            m.Hotkey.Equals(key, StringComparison.OrdinalIgnoreCase));
+        if (macro is null) return false;
+        await RunMacroAsync(macro);
+        return true;
+    }
+
+    public void ReloadMacros()
+    {
+        Macros.Clear();
+        foreach (var macro in Project.Macros.Take(20))
+        {
+            Macros.Add(new MacroViewModel(macro, RunMacroCommand));
+        }
+    }
+
+    partial void OnRepeatEnabledChanged(bool value)
+    {
+        _repeatCts?.Cancel();
+        _repeatCts?.Dispose();
+        _repeatCts = null;
+        if (!value) return;
+
+        if (!int.TryParse(RepeatMsText, out int periodMs) || periodMs < 10)
+        {
+            ComposeError = "Repeat period must be an integer ≥ 10 ms.";
+            RepeatEnabled = false;
+            return;
+        }
+
+        _repeatCts = new CancellationTokenSource();
+        _ = RepeatLoopAsync(periodMs, _repeatCts.Token);
+    }
+
+    private async Task RepeatLoopAsync(int periodMs, CancellationToken ct)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(periodMs));
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                await Dispatcher.UIThread.InvokeAsync(SendComposedAsync);
+                if (!IsConnected || ComposeError.Length > 0)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() => RepeatEnabled = false);
+                    return;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Toggled off.
+        }
     }
 
     private void OnBytesFlowed(byte[] chunk, FrameDirection dir, DateTimeOffset ts) =>
