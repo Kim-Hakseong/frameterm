@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.Input;
 using Ft.App.Services;
 using Ft.Core.Compose;
 using Ft.Core.Dump;
+using Ft.Core.Logging;
+using Ft.Core.Parsing;
 using Ft.Core.Pipeline;
 using Ft.Core.Project;
 using Ft.Core.Time;
@@ -66,7 +68,22 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _repeatMsText = "500";
 
+    [ObservableProperty]
+    private bool _filterErrorsOnly;
+
+    [ObservableProperty]
+    private string _filterPattern = string.Empty;
+
+    [ObservableProperty]
+    private bool _isLogging;
+
+    [ObservableProperty]
+    private string _logStatus = string.Empty;
+
     private CancellationTokenSource? _repeatCts;
+    private RawLogWriter? _logWriter;
+    private BytePattern? _compiledFilter;
+    private readonly List<FrameRecordViewModel> _allFrames = [];
 
     public ObservableCollection<DumpRowViewModel> DumpRows { get; } = [];
     public ObservableCollection<FrameRecordViewModel> FrameRecords { get; } = [];
@@ -109,6 +126,7 @@ public partial class MainWindowViewModel : ObservableObject
     public async Task DisconnectAsync()
     {
         RepeatEnabled = false;
+        await StopLoggingAsync();
         _demoTraffic?.Dispose();
         _demoTraffic = null;
 
@@ -227,6 +245,7 @@ public partial class MainWindowViewModel : ObservableObject
         _dumpBuilder.Clear();
         DumpRows.Clear();
         PartialRow = null;
+        _allFrames.Clear();
         FrameRecords.Clear();
         SelectedFrame = null;
         _frameCount = 0;
@@ -328,7 +347,10 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void OnBytesFlowed(byte[] chunk, FrameDirection dir, DateTimeOffset ts) =>
+    private void OnBytesFlowed(byte[] chunk, FrameDirection dir, DateTimeOffset ts)
+    {
+        // Log from the pipeline thread — TryWrite never blocks the RX path.
+        _logWriter?.WriteChunk(chunk, dir, ts);
         Dispatcher.UIThread.Post(() =>
         {
             foreach (var row in _dumpBuilder.Append(chunk, dir, ts))
@@ -339,6 +361,7 @@ public partial class MainWindowViewModel : ObservableObject
             PartialRow = _dumpBuilder.PartialRow is { } partial ? new DumpRowViewModel(partial) : null;
             UpdateStats();
         });
+    }
 
     private void OnFramesReady(IReadOnlyList<FrameRecord> batch) =>
         Dispatcher.UIThread.Post(() =>
@@ -354,8 +377,94 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void OnFrameRecord(FrameRecord record)
     {
-        FrameRecords.Add(new FrameRecordViewModel(record));
-        while (FrameRecords.Count > MaxFrameRecords) FrameRecords.RemoveAt(0);
+        var row = new FrameRecordViewModel(record);
+        _allFrames.Add(row);
+        while (_allFrames.Count > MaxFrameRecords) _allFrames.RemoveAt(0);
+        if (PassesFilter(row))
+        {
+            FrameRecords.Add(row);
+            while (FrameRecords.Count > MaxFrameRecords) FrameRecords.RemoveAt(0);
+        }
+    }
+
+    private bool PassesFilter(FrameRecordViewModel row)
+    {
+        if (FilterErrorsOnly && row.Record.ChecksumOk != false) return false;
+        if (_compiledFilter is not null && !_compiledFilter.Matches(row.Record.Raw)) return false;
+        return true;
+    }
+
+    private void RebuildFilteredFrames()
+    {
+        FrameRecords.Clear();
+        foreach (var row in _allFrames)
+        {
+            if (PassesFilter(row)) FrameRecords.Add(row);
+        }
+    }
+
+    partial void OnFilterErrorsOnlyChanged(bool value) => RebuildFilteredFrames();
+
+    partial void OnFilterPatternChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _compiledFilter = null;
+            LastError = string.Empty;
+        }
+        else
+        {
+            var parsed = BytePattern.Parse(value);
+            if (!parsed.IsOk)
+            {
+                LastError = parsed.Error;
+                return;
+            }
+            _compiledFilter = parsed.Value;
+            LastError = string.Empty;
+        }
+        RebuildFilteredFrames();
+    }
+
+    /// <summary>Start writing raw traffic (pre-framing) to a log file.</summary>
+    public void StartLogging(string path)
+    {
+        _logWriter = new RawLogWriter(path);
+        IsLogging = true;
+        LogStatus = $"REC {System.IO.Path.GetFileName(path)}";
+    }
+
+    public async Task StopLoggingAsync()
+    {
+        if (_logWriter is { } writer)
+        {
+            _logWriter = null;
+            await writer.StopAsync();
+        }
+        IsLogging = false;
+        LogStatus = string.Empty;
+    }
+
+    /// <summary>Persist the current session as .ftproj.</summary>
+    public async Task SaveProjectAsync(string path)
+    {
+        var saved = await FtProjectSerializer.SaveAsync(Project, path);
+        LastError = saved.IsOk ? string.Empty : saved.Error;
+    }
+
+    /// <summary>Load a .ftproj and apply it (macros immediately, pipeline if connected).</summary>
+    public async Task LoadProjectAsync(string path)
+    {
+        var loaded = await FtProjectSerializer.LoadAsync(path);
+        if (!loaded.IsOk)
+        {
+            LastError = loaded.Error;
+            return;
+        }
+        Project = loaded.Value;
+        ReloadMacros();
+        await ApplyProjectAsync();
+        LastError = string.Empty;
     }
 
     partial void OnSelectedFrameChanged(FrameRecordViewModel? value)

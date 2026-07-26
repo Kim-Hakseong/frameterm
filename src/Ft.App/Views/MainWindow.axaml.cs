@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Ft.App.ViewModels;
 using Ft.Core.Pipeline;
 using Ft.Core.Transport;
@@ -46,6 +47,54 @@ public partial class MainWindow : Window
         if (dialog.Applied)
         {
             ViewModel.ReloadMacros();
+        }
+    }
+
+    private async void OnLogToggleClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel.IsLogging)
+        {
+            await ViewModel.StopLoggingAsync();
+            return;
+        }
+
+        var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+        {
+            Title = "Save raw log",
+            SuggestedFileName = $"frameterm-{DateTime.Now:yyyyMMdd-HHmmss}.log",
+            FileTypeChoices = [new Avalonia.Platform.Storage.FilePickerFileType("Log file") { Patterns = ["*.log"] }],
+        });
+        if (file?.TryGetLocalPath() is { } path)
+        {
+            ViewModel.StartLogging(path);
+        }
+    }
+
+    private async void OnOpenProjectClick(object? sender, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        {
+            Title = "Open project",
+            AllowMultiple = false,
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("FrameTerm project") { Patterns = ["*.ftproj"] }],
+        });
+        if (files.Count == 1 && files[0].TryGetLocalPath() is { } path)
+        {
+            await ViewModel.LoadProjectAsync(path);
+        }
+    }
+
+    private async void OnSaveProjectClick(object? sender, RoutedEventArgs e)
+    {
+        var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+        {
+            Title = "Save project",
+            SuggestedFileName = "session.ftproj",
+            FileTypeChoices = [new Avalonia.Platform.Storage.FilePickerFileType("FrameTerm project") { Patterns = ["*.ftproj"] }],
+        });
+        if (file?.TryGetLocalPath() is { } path)
+        {
+            await ViewModel.SaveProjectAsync(path);
         }
     }
 

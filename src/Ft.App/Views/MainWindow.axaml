@@ -57,6 +57,25 @@
               <TextBlock Text="Macros" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
+          <ToggleButton IsChecked="{Binding IsLogging, Mode=OneWay}" Click="OnLogToggleClick"
+                        ToolTip.Tip="Record raw traffic (hex + timestamps) to a file">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconRecord}" />
+              <TextBlock Text="Log" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+          <Button Click="OnOpenProjectClick" ToolTip.Tip="Open .ftproj project">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFolder}" />
+              <TextBlock Text="Open" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Click="OnSaveProjectClick" ToolTip.Tip="Save session as .ftproj project">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconSave}" />
+              <TextBlock Text="Save" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
           <ToggleButton IsChecked="{Binding IsRawView}"
                         ToolTip.Tip="Continuous hex dump instead of the frame list">
             <StackPanel Orientation="Horizontal" Spacing="7">
@@ -153,7 +172,21 @@
         <Border Grid.Row="0" Classes="card" Padding="14">
           <DockPanel>
             <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
-              <TextBlock Text="Frames" Classes="sectionTitle" />
+              <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                  <ToggleButton IsChecked="{Binding FilterErrorsOnly}" Padding="12,4" FontSize="12">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <PathIcon Data="{StaticResource IconWarning}" Width="12" Height="12" />
+                      <TextBlock Text="Errors only" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </ToggleButton>
+                  <TextBox Text="{Binding FilterPattern}" Width="160" FontSize="12"
+                           Watermark="Filter: A5 ?? 01" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding LogStatus}" Classes="error" FontSize="11"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="Frames" Classes="sectionTitle" VerticalAlignment="Center" />
+              </DockPanel>
             </Border>
             <DataGrid ItemsSource="{Binding FrameRecords}"
                       SelectedItem="{Binding SelectedFrame}"
