@@ -1,6 +1,6 @@
 # FrameTerm
 
-**A byte-oriented serial protocol workbench** — the spiritual successor to RealTerm. Define your frame once, and every byte on the wire becomes a parsed, checksum-verified, color-coded record. No scripting required.
+**A byte-oriented serial protocol workbench.** Define your frame once, and every byte on the wire becomes a parsed, checksum-verified, color-coded record. No scripting required.
 
 > 바이트 지향 시리얼 프로토콜 워크벤치입니다. 구분자/고정길이/길이필드/침묵갭 4가지 프레이밍 모드로 프레임을 선언하면, 수신 스트림이 자동으로 프레임 단위로 잘리고 CRC 검증(OK/FAIL 색상 표시), 필드 파싱, 하이라이트까지 한 번에 처리됩니다. 스크립트 없이 동작하며 Windows/macOS/Linux를 지원합니다.
 
