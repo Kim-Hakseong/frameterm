@@ -45,6 +45,19 @@
               <TextBlock Text="Demo" VerticalAlignment="Center" />
             </StackPanel>
           </ToggleButton>
+          <Button Click="OnFrameDefClick" ToolTip.Tip="Framing, checksum, fields, highlight rules">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFrame}" />
+              <TextBlock Text="Frame def" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <ToggleButton IsChecked="{Binding IsRawView}"
+                        ToolTip.Tip="Continuous hex dump instead of the frame list">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFilter}" />
+              <TextBlock Text="Raw" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
           <ComboBox ItemsSource="{Binding BytesPerRowOptions}"
                     SelectedIndex="{Binding BytesPerRowIndex}"
                     VerticalAlignment="Center" MinWidth="130" />
@@ -76,54 +89,142 @@
       </DockPanel>
     </Border>
 
-    <!-- Dual hex+ASCII dump card -->
-    <Border Classes="card" Padding="14">
-      <DockPanel>
-        <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
-          <StackPanel Orientation="Horizontal" Spacing="24">
-            <TextBlock Text="Raw stream" Classes="sectionTitle" VerticalAlignment="Center" />
-            <TextBlock Text="time · dir · offset · hex · ascii" Classes="muted"
-                       VerticalAlignment="Center" />
-          </StackPanel>
+    <!-- Central area: frame view or raw dump (toggle) -->
+    <Panel>
+
+      <!-- Frame list + detail -->
+      <Grid RowDefinitions="2*,12,*" IsVisible="{Binding !IsRawView}">
+        <Border Grid.Row="0" Classes="card" Padding="14">
+          <DockPanel>
+            <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
+              <TextBlock Text="Frames" Classes="sectionTitle" />
+            </Border>
+            <DataGrid ItemsSource="{Binding FrameRecords}"
+                      SelectedItem="{Binding SelectedFrame}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserReorderColumns="False">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Width="8">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate x:DataType="vm:FrameRecordViewModel">
+                      <Border Background="{Binding HighlightBrush}" Width="4" Margin="2,2"
+                              CornerRadius="2" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
+                <DataGridTemplateColumn Header="Dir" Width="50">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate x:DataType="vm:FrameRecordViewModel">
+                      <TextBlock Text="{Binding Dir}" Foreground="{Binding DirBrush}"
+                                 FontWeight="Medium" VerticalAlignment="Center" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Len" Binding="{Binding Len}" Width="60" />
+                <DataGridTemplateColumn Header="Checksum" Width="90">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate x:DataType="vm:FrameRecordViewModel">
+                      <TextBlock Text="{Binding ChecksumText}" Foreground="{Binding ChecksumBrush}"
+                                 FontWeight="Medium" VerticalAlignment="Center" />
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Fields" Binding="{Binding FieldsSummary}" Width="*" />
+                <DataGridTextColumn Header="Raw" Binding="{Binding RawPreview}" Width="2*"
+                                    FontFamily="Menlo,Consolas,monospace" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
         </Border>
+
+        <Border Grid.Row="2" Classes="card" Padding="14">
+          <Grid ColumnDefinitions="3*,12,2*">
+            <DockPanel Grid.Column="0">
+              <TextBlock DockPanel.Dock="Top" Text="Selected frame" Classes="fieldLabel" />
+              <ListBox ItemsSource="{Binding DetailRows}" Padding="2">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DumpRowViewModel">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Offset}" />
+                      <TextBlock Classes="mono" FontSize="12" Text="{Binding Hex}"
+                                 Foreground="{Binding Brush}" />
+                      <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Ascii}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.Styles>
+                  <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="4,1" />
+                    <Setter Property="MinHeight" Value="0" />
+                  </Style>
+                </ListBox.Styles>
+              </ListBox>
+            </DockPanel>
+            <DockPanel Grid.Column="2">
+              <TextBlock DockPanel.Dock="Top" Text="Fields" Classes="fieldLabel" />
+              <DataGrid ItemsSource="{Binding DetailFields}" AutoGenerateColumns="False"
+                        IsReadOnly="True" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                  <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </DockPanel>
+          </Grid>
+        </Border>
+      </Grid>
+
+      <!-- Raw dual hex+ASCII dump -->
+      <Border Classes="card" Padding="14" IsVisible="{Binding IsRawView}">
         <DockPanel>
-          <Border DockPanel.Dock="Bottom" MinHeight="22" Padding="8,2">
-            <StackPanel Orientation="Horizontal" Spacing="14"
-                        IsVisible="{Binding PartialRow, Converter={x:Static ObjectConverters.IsNotNull}}">
-              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Time}" />
-              <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Dir}"
-                         Foreground="{Binding PartialRow.Brush}" />
-              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Offset}" />
-              <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Hex}"
-                         Foreground="{Binding PartialRow.Brush}" />
-              <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Ascii}" />
+          <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Spacing="24">
+              <TextBlock Text="Raw stream" Classes="sectionTitle" VerticalAlignment="Center" />
+              <TextBlock Text="time · dir · offset · hex · ascii" Classes="muted"
+                         VerticalAlignment="Center" />
             </StackPanel>
           </Border>
-          <ListBox x:Name="DumpList" ItemsSource="{Binding DumpRows}" Padding="4"
-                   ScrollViewer.HorizontalScrollBarVisibility="Auto">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:DumpRowViewModel">
-                <StackPanel Orientation="Horizontal" Spacing="14">
-                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Time}" />
-                  <TextBlock Classes="mono" FontSize="12" Text="{Binding Dir}"
-                             Foreground="{Binding Brush}" />
-                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Offset}" />
-                  <TextBlock Classes="mono" FontSize="12" Text="{Binding Hex}"
-                             Foreground="{Binding Brush}" />
-                  <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Ascii}" />
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.Styles>
-              <Style Selector="ListBoxItem">
-                <Setter Property="Padding" Value="4,1" />
-                <Setter Property="MinHeight" Value="0" />
-              </Style>
-            </ListBox.Styles>
-          </ListBox>
+          <DockPanel>
+            <Border DockPanel.Dock="Bottom" MinHeight="22" Padding="8,2">
+              <StackPanel Orientation="Horizontal" Spacing="14"
+                          IsVisible="{Binding PartialRow, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Time}" />
+                <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Dir}"
+                           Foreground="{Binding PartialRow.Brush}" />
+                <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Offset}" />
+                <TextBlock Classes="mono" FontSize="12" Text="{Binding PartialRow.Hex}"
+                           Foreground="{Binding PartialRow.Brush}" />
+                <TextBlock Classes="mono muted" FontSize="12" Text="{Binding PartialRow.Ascii}" />
+              </StackPanel>
+            </Border>
+            <ListBox x:Name="DumpList" ItemsSource="{Binding DumpRows}" Padding="4"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:DumpRowViewModel">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Time}" />
+                    <TextBlock Classes="mono" FontSize="12" Text="{Binding Dir}"
+                               Foreground="{Binding Brush}" />
+                    <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Offset}" />
+                    <TextBlock Classes="mono" FontSize="12" Text="{Binding Hex}"
+                               Foreground="{Binding Brush}" />
+                    <TextBlock Classes="mono muted" FontSize="12" Text="{Binding Ascii}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+              <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                  <Setter Property="Padding" Value="4,1" />
+                  <Setter Property="MinHeight" Value="0" />
+                </Style>
+              </ListBox.Styles>
+            </ListBox>
+          </DockPanel>
         </DockPanel>
-      </DockPanel>
-    </Border>
+      </Border>
+
+    </Panel>
 
   </DockPanel>
 </Window>

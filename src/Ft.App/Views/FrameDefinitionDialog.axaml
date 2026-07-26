@@ -1,0 +1,194 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Ft.App.Views.FrameDefinitionDialog"
+        Title="Frame Definition"
+        Width="640" Height="640"
+        WindowStartupLocation="CenterOwner">
+  <ScrollViewer>
+    <StackPanel Margin="14" Spacing="12">
+
+      <!-- Framing -->
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Framing" Classes="sectionTitle" />
+          <StackPanel>
+            <TextBlock Classes="fieldLabel" Text="Mode" />
+            <ComboBox x:Name="ModeCombo" HorizontalAlignment="Stretch"
+                      SelectionChanged="OnModeChanged">
+              <ComboBoxItem>None (raw stream)</ComboBoxItem>
+              <ComboBoxItem>Delimiter</ComboBoxItem>
+              <ComboBoxItem>Fixed length</ComboBoxItem>
+              <ComboBoxItem>Length field</ComboBoxItem>
+              <ComboBoxItem>Silence gap</ComboBoxItem>
+            </ComboBox>
+          </StackPanel>
+
+          <StackPanel x:Name="DelimiterPanel" Spacing="8">
+            <Grid ColumnDefinitions="*,12,*,12,*">
+              <StackPanel Grid.Column="0">
+                <TextBlock Classes="fieldLabel" Text="Start seq (hex, optional)" />
+                <TextBox x:Name="StartHexBox" Watermark="e.g. 02" />
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Classes="fieldLabel" Text="End seq (hex)" />
+                <TextBox x:Name="EndHexBox" Watermark="e.g. 03 or 0D 0A" />
+              </StackPanel>
+              <StackPanel Grid.Column="4">
+                <TextBlock Classes="fieldLabel" Text="Escape byte (optional)" />
+                <TextBox x:Name="EscapeHexBox" Watermark="e.g. 1B" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+
+          <StackPanel x:Name="FixedPanel">
+            <TextBlock Classes="fieldLabel" Text="Frame length (bytes)" />
+            <TextBox x:Name="FixedLenBox" Text="8" />
+          </StackPanel>
+
+          <StackPanel x:Name="LengthFieldPanel" Spacing="8">
+            <Grid ColumnDefinitions="*,12,*,12,*">
+              <StackPanel Grid.Column="0">
+                <TextBlock Classes="fieldLabel" Text="Header length" />
+                <TextBox x:Name="HeaderLenBox" Text="2" />
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Classes="fieldLabel" Text="Len offset" />
+                <TextBox x:Name="LenOffsetBox" Text="1" />
+              </StackPanel>
+              <StackPanel Grid.Column="4">
+                <TextBlock Classes="fieldLabel" Text="Len size (1/2/4)" />
+                <TextBox x:Name="LenSizeBox" Text="1" />
+              </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="*,12,*">
+              <StackPanel Grid.Column="0">
+                <TextBlock Classes="fieldLabel" Text="Endian" />
+                <ComboBox x:Name="LenEndianCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+                  <ComboBoxItem>LE</ComboBoxItem>
+                  <ComboBoxItem>BE</ComboBoxItem>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Classes="fieldLabel" Text="Len adjust (total = len value + adjust)" />
+                <TextBox x:Name="LenAdjustBox" Text="0" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+
+          <StackPanel x:Name="SilencePanel">
+            <TextBlock Classes="fieldLabel" Text="Silence gap (ms)" />
+            <TextBox x:Name="GapMsBox" Text="20" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- Checksum -->
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Checksum" Classes="sectionTitle" />
+          <Grid ColumnDefinitions="*,12,*,12,*">
+            <StackPanel Grid.Column="0">
+              <TextBlock Classes="fieldLabel" Text="Preset" />
+              <ComboBox x:Name="PresetCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>CRC16_MODBUS</ComboBoxItem>
+                <ComboBoxItem>CRC16_CCITT_FALSE</ComboBoxItem>
+                <ComboBoxItem>CRC32</ComboBoxItem>
+                <ComboBoxItem>CRC8</ComboBoxItem>
+                <ComboBoxItem>XOR8</ComboBoxItem>
+                <ComboBoxItem>SUM8</ComboBoxItem>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="fieldLabel" Text="Offset from end" />
+              <TextBox x:Name="OffsetFromEndBox" Text="2" />
+            </StackPanel>
+            <StackPanel Grid.Column="4">
+              <TextBlock Classes="fieldLabel" Text="Byte order" />
+              <ComboBox x:Name="ChecksumEndianCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+                <ComboBoxItem>LE</ComboBoxItem>
+                <ComboBoxItem>BE</ComboBoxItem>
+              </ComboBox>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,12,*">
+            <StackPanel Grid.Column="0">
+              <TextBlock Classes="fieldLabel" Text="Coverage start offset" />
+              <TextBox x:Name="CoverageStartBox" Text="0" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="fieldLabel" Text="Coverage end offset from end" />
+              <TextBox x:Name="CoverageEndBox" Text="2" />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- Fields -->
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+              <Button Click="OnAddFieldClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconAdd}" Width="13" Height="13" />
+              </Button>
+              <Button Click="OnRemoveFieldClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconRemove}" Width="13" Height="13" />
+              </Button>
+            </StackPanel>
+            <TextBlock Text="Fields" Classes="sectionTitle" VerticalAlignment="Center" />
+          </DockPanel>
+          <DataGrid x:Name="FieldsGrid" AutoGenerateColumns="False" Height="140"
+                    CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+              <DataGridTextColumn Header="Offset" Binding="{Binding Offset}" Width="80" />
+              <DataGridTextColumn Header="Type (u8..f32)" Binding="{Binding Type}" Width="110" />
+              <DataGridTextColumn Header="Endian (LE/BE)" Binding="{Binding Endian}" Width="110" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
+      <!-- Highlights -->
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+              <Button Click="OnAddHighlightClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconAdd}" Width="13" Height="13" />
+              </Button>
+              <Button Click="OnRemoveHighlightClick" Padding="10,4">
+                <PathIcon Data="{StaticResource IconRemove}" Width="13" Height="13" />
+              </Button>
+            </StackPanel>
+            <TextBlock Text="Highlight rules (first match wins)" Classes="sectionTitle"
+                       VerticalAlignment="Center" />
+          </DockPanel>
+          <DataGrid x:Name="HighlightsGrid" AutoGenerateColumns="False" Height="120"
+                    CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Byte pattern" Binding="{Binding Pattern}" Width="*" />
+              <DataGridTextColumn Header="Field" Binding="{Binding Field}" Width="90" />
+              <DataGridTextColumn Header="Op" Binding="{Binding Op}" Width="60" />
+              <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="80" />
+              <DataGridTextColumn Header="Color" Binding="{Binding Color}" Width="90" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
+      <TextBlock x:Name="ErrorText" Classes="error" IsVisible="False" TextWrapping="Wrap" />
+
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,0,0,8">
+        <Button Content="Cancel" Click="OnCancelClick" />
+        <Button Classes="accent" Click="OnApplyClick">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <PathIcon Data="{StaticResource IconFrame}" />
+            <TextBlock Text="Apply" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</Window>

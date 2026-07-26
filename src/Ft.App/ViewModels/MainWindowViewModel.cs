@@ -3,11 +3,10 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Ft.App.Services;
-using Ft.Core.Checksum;
 using Ft.Core.Dump;
-using Ft.Core.Framing;
-using Ft.Core.Parsing;
 using Ft.Core.Pipeline;
+using Ft.Core.Project;
+using Ft.Core.Time;
 using Ft.Core.Transport;
 
 namespace Ft.App.ViewModels;
@@ -15,6 +14,7 @@ namespace Ft.App.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private const int MaxDumpRows = 5000;
+    private const int MaxFrameRecords = 10000;
 
     private ITransport? _transport;
     private RxPipeline? _pipeline;
@@ -47,8 +47,20 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private DumpRowViewModel? _partialRow;
 
+    [ObservableProperty]
+    private bool _isRawView;
+
+    [ObservableProperty]
+    private FrameRecordViewModel? _selectedFrame;
+
     public ObservableCollection<DumpRowViewModel> DumpRows { get; } = [];
+    public ObservableCollection<FrameRecordViewModel> FrameRecords { get; } = [];
+    public ObservableCollection<DumpRowViewModel> DetailRows { get; } = [];
+    public ObservableCollection<FieldDisplay> DetailFields { get; } = [];
     public string[] BytesPerRowOptions { get; } = ["8 bytes/row", "16 bytes/row", "32 bytes/row"];
+
+    /// <summary>The editable session project (framing/checksum/fields/highlights/macros).</summary>
+    public FtProject Project { get; set; } = new();
 
     private int BytesPerRow => BytesPerRowIndex switch { 0 => 8, 2 => 32, _ => 16 };
 
@@ -103,6 +115,45 @@ public partial class MainWindowViewModel : ObservableObject
         PortSummary = "-";
     }
 
+    /// <summary>Connect using the current project's framing/checksum/field config.</summary>
+    public async Task ConnectWithProjectAsync(ITransport transport, string summary)
+    {
+        var config = Project.BuildPipelineConfig(SystemTimeSource.Instance);
+        if (!config.IsOk)
+        {
+            LastError = config.Error;
+            return;
+        }
+        await ConnectAsync(transport, config.Value, summary);
+    }
+
+    /// <summary>Re-apply the project config to a live connection (frame def edited).</summary>
+    public async Task ApplyProjectAsync()
+    {
+        if (_transport is null || _pipeline is null)
+        {
+            return;
+        }
+        var config = Project.BuildPipelineConfig(SystemTimeSource.Instance);
+        if (!config.IsOk)
+        {
+            LastError = config.Error;
+            return;
+        }
+
+        _pipeline.BytesFlowed -= OnBytesFlowed;
+        _pipeline.FramesReady -= OnFramesReady;
+        _pipeline.TransportError -= OnTransportError;
+        await _pipeline.StopAsync();
+
+        _pipeline = new RxPipeline(_transport, config.Value);
+        _pipeline.BytesFlowed += OnBytesFlowed;
+        _pipeline.FramesReady += OnFramesReady;
+        _pipeline.TransportError += OnTransportError;
+        _pipeline.Start();
+        LastError = string.Empty;
+    }
+
     /// <summary>Demo mode: echo transport + built-in sample protocol traffic.</summary>
     [RelayCommand]
     public async Task ToggleDemoAsync()
@@ -113,28 +164,43 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
+        Project = DemoProject();
         var transport = new EchoFakeTransport();
-        await ConnectAsync(transport, DemoPipelineConfig(), "Demo (echo + sample protocol)");
+        await ConnectWithProjectAsync(transport, "Demo (echo + sample protocol)");
         _demoTraffic = new DemoTraffic(transport);
         _demoTraffic.Start();
         IsDemoMode = true;
     }
 
-    /// <summary>Pipeline config matching DemoTraffic's sample protocol.</summary>
-    public static PipelineConfig DemoPipelineConfig() => new()
+    /// <summary>Project describing DemoTraffic's sample protocol.</summary>
+    public static FtProject DemoProject() => new()
     {
-        Framer = new LengthFieldFramer(headerLen: 2, lenOffset: 1, lenSize: 1, ByteOrder.Little, lenAdjust: 2),
-        ChecksumSpec = ChecksumPresets.Crc16Modbus,
-        ChecksumPlacement = new ChecksumPlacement(2, ByteOrder.Little, 0, 2),
+        Framing = new FramingConfig
+        {
+            Mode = "LengthField",
+            HeaderLen = 2,
+            LenOffset = 1,
+            LenSize = 1,
+            Endian = "LE",
+            LenAdjust = 2,
+        },
+        Checksum = new ChecksumConfig
+        {
+            Preset = "CRC16_MODBUS",
+            OffsetFromEnd = 2,
+            ByteOrder = "LE",
+            CoverageStart = 0,
+            CoverageEndOffsetFromEnd = 2,
+        },
         Fields =
         [
-            new FieldSpec("seq", 2, FieldType.U8),
-            new FieldSpec("temp", 3, FieldType.S16, ByteOrder.Big),
-            new FieldSpec("status", 5, FieldType.U8),
+            new FieldConfig { Name = "seq", Offset = 2, Type = "u8" },
+            new FieldConfig { Name = "temp", Offset = 3, Type = "s16", Endian = "BE" },
+            new FieldConfig { Name = "status", Offset = 5, Type = "u8" },
         ],
         Highlights =
         [
-            new HighlightRule("#9C2030", new FieldCondition("status", FieldOp.Ne, 0)),
+            new HighlightConfig { Field = "status", Op = "!=", Value = 0, Color = "#9C2030" },
         ],
     };
 
@@ -144,6 +210,8 @@ public partial class MainWindowViewModel : ObservableObject
         _dumpBuilder.Clear();
         DumpRows.Clear();
         PartialRow = null;
+        FrameRecords.Clear();
+        SelectedFrame = null;
         _frameCount = 0;
         _errorCount = 0;
         UpdateStats();
@@ -187,9 +255,29 @@ public partial class MainWindowViewModel : ObservableObject
             UpdateStats();
         });
 
-    /// <summary>Extension point for the frame list (M6).</summary>
-    protected virtual void OnFrameRecord(FrameRecord record)
+    private void OnFrameRecord(FrameRecord record)
     {
+        FrameRecords.Add(new FrameRecordViewModel(record));
+        while (FrameRecords.Count > MaxFrameRecords) FrameRecords.RemoveAt(0);
+    }
+
+    partial void OnSelectedFrameChanged(FrameRecordViewModel? value)
+    {
+        DetailRows.Clear();
+        DetailFields.Clear();
+        if (value is null) return;
+
+        var builder = new HexDumpBuilder(16);
+        foreach (var row in builder.Append(value.Record.Raw, value.Record.Direction, value.Record.Timestamp))
+        {
+            DetailRows.Add(new DumpRowViewModel(row));
+        }
+        if (builder.PartialRow is { } partial) DetailRows.Add(new DumpRowViewModel(partial));
+
+        foreach (var field in value.Record.Fields)
+        {
+            DetailFields.Add(new FieldDisplay(field.Name, field.Display));
+        }
     }
 
     private void OnTransportError(string message) =>

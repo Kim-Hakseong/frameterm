@@ -24,10 +24,18 @@ public partial class MainWindow : Window
         if (dialog.Result is not { } settings) return;
 
         var transport = new SerialTransport(settings);
-        // Raw mode until a frame definition is configured (M6).
-        await ViewModel.ConnectAsync(
+        await ViewModel.ConnectWithProjectAsync(
             transport,
-            new PipelineConfig(),
             $"{settings.PortName} @ {settings.BaudRate}");
+    }
+
+    private async void OnFrameDefClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new FrameDefinitionDialog(ViewModel.Project);
+        await dialog.ShowDialog(this);
+        if (dialog.Applied)
+        {
+            await ViewModel.ApplyProjectAsync();
+        }
     }
 }
