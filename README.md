@@ -4,6 +4,10 @@
 
 > 바이트 지향 시리얼 프로토콜 워크벤치입니다. 구분자/고정길이/길이필드/침묵갭 4가지 프레이밍 모드로 프레임을 선언하면, 수신 스트림이 자동으로 프레임 단위로 잘리고 CRC 검증(OK/FAIL 색상 표시), 필드 파싱, 하이라이트까지 한 번에 처리됩니다. 스크립트 없이 동작하며 Windows/macOS/Linux를 지원합니다.
 
+![FrameTerm demo mode — framed stream with CRC verification, parsed fields, and a highlighted FAIL frame](docs/screenshot.png)
+
+*Demo mode: the built-in sample protocol streaming through the pipeline — checksum OK/FAIL per frame, live field parsing (seq/temp/status), and the selected FAIL frame's hex dump + field table below. Reproducible via `dotnet test tests/Ft.App.Tests --filter CaptureDemoModeScreenshot`.*
+
 ## Why
 
 Terminal emulators (PuTTY, TeraTerm) are built for text. Binary protocol debugging needs framing, checksums, field decoding, and precise byte-level visibility. FrameTerm does exactly that.
