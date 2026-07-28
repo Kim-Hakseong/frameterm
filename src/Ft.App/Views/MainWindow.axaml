@@ -21,7 +21,7 @@
                    Foreground="{StaticResource InkBrush}" VerticalAlignment="Center" />
         <Border Classes="statusPill" VerticalAlignment="Center">
           <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGradientBrush}" VerticalAlignment="Center" />
             <TextBlock Text="{Binding ConnectionStatus}" Classes="mono" FontSize="12"
                        Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
           </StackPanel>
