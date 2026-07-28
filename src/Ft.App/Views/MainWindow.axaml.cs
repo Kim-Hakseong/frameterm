@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Ft.App.Services;
 using Ft.App.ViewModels;
 using Ft.Core.Pipeline;
 using Ft.Core.Transport;
@@ -11,6 +12,12 @@ public partial class MainWindow : Window
 {
     private HelpWindow? _helpWindow;
 
+    /// <summary>
+    /// Opt-in from Program.Main so the guide pops for real users only —
+    /// headless tests construct windows freely without a guide appearing.
+    /// </summary>
+    public static bool AutoShowGuideOnFirstRun { get; set; }
+
     public MainWindowViewModel ViewModel { get; }
 
     public MainWindow()
@@ -20,7 +27,18 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
     }
 
-    private void OnHelpClick(object? sender, RoutedEventArgs e)
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        if (AutoShowGuideOnFirstRun && AppState.IsFirstRun())
+        {
+            ShowHelp();
+        }
+    }
+
+    private void OnHelpClick(object? sender, RoutedEventArgs e) => ShowHelp();
+
+    private void ShowHelp()
     {
         if (_helpWindow is { IsVisible: true })
         {
