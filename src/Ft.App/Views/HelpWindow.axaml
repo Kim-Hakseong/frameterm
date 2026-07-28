@@ -17,7 +17,7 @@
           <TextBlock x:Name="ToggleText" Text="한국어" VerticalAlignment="Center" />
         </StackPanel>
       </Button>
-      <TextBlock x:Name="HeadingText" Classes="serifHeader" FontSize="22"
+      <TextBlock x:Name="HeadingText" Classes="sectionTitle" FontSize="19"
                  VerticalAlignment="Center" Text="FrameTerm quick guide" />
     </DockPanel>
 

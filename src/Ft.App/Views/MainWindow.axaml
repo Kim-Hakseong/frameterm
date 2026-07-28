@@ -5,141 +5,106 @@
         x:DataType="vm:MainWindowViewModel"
         Title="FrameTerm"
         Icon="/Assets/app.ico"
-        Width="1280" Height="800"
-        MinWidth="980" MinHeight="640">
+        Width="1280" Height="760"
+        MinWidth="980" MinHeight="600">
   <Window.Styles>
     <Style Selector="WrapPanel#ToolbarPanel > :is(Control)">
       <Setter Property="Margin" Value="0,3,6,3" />
     </Style>
   </Window.Styles>
-  <DockPanel Margin="22,18">
+  <DockPanel Margin="16">
 
-    <!-- Header: serif wordmark + connection pill | toolbar -->
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="2,0,2,16">
-      <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-        <TextBlock Text="FrameTerm" Classes="wordmark" FontSize="28"
-                   Foreground="{StaticResource InkBrush}" VerticalAlignment="Center" />
-        <Border Classes="statusPill" VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentGradientBrush}" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding ConnectionStatus}" Classes="mono" FontSize="12"
-                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-          </StackPanel>
+    <!-- Top bar card -->
+    <Border DockPanel.Dock="Top" Classes="card" Padding="10,8" Margin="0,0,0,12">
+      <DockPanel>
+        <Border DockPanel.Dock="Left" Classes="pill" VerticalAlignment="Center"
+                Background="{StaticResource CardBrush}">
+          <TextBlock Text="FrameTerm" FontWeight="SemiBold" FontSize="14" />
         </Border>
-      </StackPanel>
-      <WrapPanel x:Name="ToolbarPanel" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-        <Button x:Name="ConnectButton" Classes="accent" Click="OnConnectClick"
-                IsEnabled="{Binding !IsConnected}">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconLink}" />
-            <TextBlock Text="Connect" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconLinkOff}" />
-            <TextBlock Text="Disconnect" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <ToggleButton IsChecked="{Binding IsDemoMode, Mode=OneWay}"
-                      Command="{Binding ToggleDemoCommand}"
-                      ToolTip.Tip="Run without hardware: echo transport + sample protocol">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconChip}" />
-            <TextBlock Text="Demo" VerticalAlignment="Center" />
-          </StackPanel>
-        </ToggleButton>
-        <Button Click="OnFrameDefClick" ToolTip.Tip="Framing, checksum, fields, highlight rules">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconFrame}" />
-            <TextBlock Text="Frame def" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Click="OnMacrosClick" ToolTip.Tip="Manage send macros (20 max, hotkeys)">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconMacro}" />
-            <TextBlock Text="Macros" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <ToggleButton IsChecked="{Binding IsLogging, Mode=OneWay}" Click="OnLogToggleClick"
-                      ToolTip.Tip="Record raw traffic (hex + timestamps) to a file">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconRecord}" />
-            <TextBlock Text="Log" VerticalAlignment="Center" />
-          </StackPanel>
-        </ToggleButton>
-        <Button Click="OnOpenProjectClick" ToolTip.Tip="Open .ftproj project">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconFolder}" />
-            <TextBlock Text="Open" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Click="OnSaveProjectClick" ToolTip.Tip="Save session as .ftproj project">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconSave}" />
-            <TextBlock Text="Save" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <ToggleButton IsChecked="{Binding IsRawView}"
-                      ToolTip.Tip="Continuous hex dump instead of the frame list">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconFilter}" />
-            <TextBlock Text="Raw" VerticalAlignment="Center" />
-          </StackPanel>
-        </ToggleButton>
-        <ComboBox ItemsSource="{Binding BytesPerRowOptions}"
-                  SelectedIndex="{Binding BytesPerRowIndex}"
-                  VerticalAlignment="Center" MinWidth="130" />
-        <Button Command="{Binding ClearDumpCommand}">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconTrash}" />
-            <TextBlock Text="Clear" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Click="OnHelpClick" ToolTip.Tip="Quick guide (English / 한국어)">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <PathIcon Data="{StaticResource IconHelp}" />
-            <TextBlock Text="Help" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
-      </WrapPanel>
-    </Grid>
-
-    <!-- Dashboard stat strip: big mono counters, RX tile carries the spectrum glow -->
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,14,*,14,*,14,*" Margin="0,0,0,16">
-      <Border Grid.Column="0" Classes="statTile">
-        <Panel>
-          <Border CornerRadius="12" Background="{StaticResource SpectrumGlowBrush}"
-                  Margin="-16,-12" />
-          <StackPanel>
-            <TextBlock Text="RX BYTES" Classes="statLabel" />
-            <TextBlock Text="{Binding RxText}" Classes="statValue" />
-          </StackPanel>
-        </Panel>
-      </Border>
-      <Border Grid.Column="2" Classes="statTile">
-        <StackPanel>
-          <TextBlock Text="TX BYTES" Classes="statLabel" />
-          <TextBlock Text="{Binding TxText}" Classes="statValue" />
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="4" Classes="statTile">
-        <StackPanel>
-          <TextBlock Text="FRAMES" Classes="statLabel" />
-          <TextBlock Text="{Binding FramesText}" Classes="statValue" />
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="6" Classes="statTile">
-        <StackPanel>
-          <TextBlock Text="ERRORS" Classes="statLabel" />
-          <TextBlock Text="{Binding ErrorsText}" Classes="statValue" />
-        </StackPanel>
-      </Border>
-    </Grid>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding ConnectionStatus}" Classes="muted"
+                   VerticalAlignment="Center" Margin="12,0,6,0" />
+        <WrapPanel x:Name="ToolbarPanel" Margin="12,0,0,0" VerticalAlignment="Center">
+          <Button x:Name="ConnectButton" Classes="accent" Click="OnConnectClick"
+                  IsEnabled="{Binding !IsConnected}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconLink}" />
+              <TextBlock Text="Connect" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconLinkOff}" />
+              <TextBlock Text="Disconnect" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <ToggleButton IsChecked="{Binding IsDemoMode, Mode=OneWay}"
+                        Command="{Binding ToggleDemoCommand}"
+                        ToolTip.Tip="Run without hardware: echo transport + sample protocol">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconChip}" />
+              <TextBlock Text="Demo" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+          <Button Click="OnFrameDefClick" ToolTip.Tip="Framing, checksum, fields, highlight rules">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFrame}" />
+              <TextBlock Text="Frame def" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Click="OnMacrosClick" ToolTip.Tip="Manage send macros (20 max, hotkeys)">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconMacro}" />
+              <TextBlock Text="Macros" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <ToggleButton IsChecked="{Binding IsLogging, Mode=OneWay}" Click="OnLogToggleClick"
+                        ToolTip.Tip="Record raw traffic (hex + timestamps) to a file">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconRecord}" />
+              <TextBlock Text="Log" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+          <Button Click="OnOpenProjectClick" ToolTip.Tip="Open .ftproj project">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFolder}" />
+              <TextBlock Text="Open" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Click="OnSaveProjectClick" ToolTip.Tip="Save session as .ftproj project">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconSave}" />
+              <TextBlock Text="Save" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <ToggleButton IsChecked="{Binding IsRawView}"
+                        ToolTip.Tip="Continuous hex dump instead of the frame list">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconFilter}" />
+              <TextBlock Text="Raw" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+          <ComboBox ItemsSource="{Binding BytesPerRowOptions}"
+                    SelectedIndex="{Binding BytesPerRowIndex}"
+                    VerticalAlignment="Center" MinWidth="130" />
+          <Button Command="{Binding ClearDumpCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconTrash}" />
+              <TextBlock Text="Clear" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Click="OnHelpClick" ToolTip.Tip="Quick guide (한국어 / English)">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IconHelp}" />
+              <TextBlock Text="Help" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </WrapPanel>
+      </DockPanel>
+    </Border>
 
     <!-- Compose bar -->
-    <Border DockPanel.Dock="Bottom" Classes="card" Padding="14,12" Margin="0,14,0,0">
-      <StackPanel Spacing="9">
+    <Border DockPanel.Dock="Bottom" Classes="card" Padding="12,10" Margin="0,12,0,0">
+      <StackPanel Spacing="8">
         <DockPanel>
           <Button DockPanel.Dock="Right" Classes="accent" Margin="8,0,0,0"
                   Command="{Binding SendComposedCommand}"
@@ -187,19 +152,15 @@
       </StackPanel>
     </Border>
 
-    <!-- Bottom status line + wordmark/copyright -->
-    <Border DockPanel.Dock="Bottom" Padding="12,10,12,2">
+    <!-- Bottom status line + logo/copyright -->
+    <Border DockPanel.Dock="Bottom" Padding="12,8,12,2">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="10"
                     VerticalAlignment="Center">
-          <TextBlock Text="© 2026 TestBench.tools · All rights reserved." Classes="muted"
+          <TextBlock Text="© 2026 NEXYS Co., Ltd. All rights reserved." Classes="muted"
                      FontSize="11" VerticalAlignment="Center" />
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <TextBlock Text="TestBench" Classes="wordmark" FontSize="16"
-                       Foreground="{StaticResource InkBrush}" VerticalAlignment="Center" />
-            <TextBlock Text=".tools" Classes="wordmark" FontSize="16"
-                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-          </StackPanel>
+          <Image Source="/Assets/nexys-logo.png" Height="14" VerticalAlignment="Center"
+                 RenderOptions.BitmapInterpolationMode="HighQuality" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="18">
           <TextBlock Text="{Binding PortSummary}" Classes="muted" />
@@ -213,25 +174,26 @@
     <Panel>
 
       <!-- Frame list + detail -->
-      <Grid RowDefinitions="2*,14,*" IsVisible="{Binding !IsRawView}">
-        <Border Grid.Row="0" Classes="card" Padding="16">
+      <Grid RowDefinitions="2*,12,*" IsVisible="{Binding !IsRawView}">
+        <Border Grid.Row="0" Classes="card" Padding="14">
           <DockPanel>
-            <DockPanel DockPanel.Dock="Top" Margin="2,0,2,10">
-              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8"
-                          VerticalAlignment="Center">
-                <ToggleButton IsChecked="{Binding FilterErrorsOnly}" Padding="12,4" FontSize="12">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <PathIcon Data="{StaticResource IconWarning}" Width="12" Height="12" />
-                    <TextBlock Text="Errors only" VerticalAlignment="Center" />
-                  </StackPanel>
-                </ToggleButton>
-                <TextBox Text="{Binding FilterPattern}" Width="170" FontSize="12"
-                         Watermark="Filter: A5 ?? 01" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding LogStatus}" Classes="error" FontSize="11"
-                           VerticalAlignment="Center" />
-              </StackPanel>
-              <TextBlock Text="Frames" Classes="serifHeader" VerticalAlignment="Center" />
-            </DockPanel>
+            <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
+              <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                  <ToggleButton IsChecked="{Binding FilterErrorsOnly}" Padding="12,4" FontSize="12">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <PathIcon Data="{StaticResource IconWarning}" Width="12" Height="12" />
+                      <TextBlock Text="Errors only" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </ToggleButton>
+                  <TextBox Text="{Binding FilterPattern}" Width="160" FontSize="12"
+                           Watermark="Filter: A5 ?? 01" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding LogStatus}" Classes="error" FontSize="11"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="Frames" Classes="sectionTitle" VerticalAlignment="Center" />
+              </DockPanel>
+            </Border>
             <DataGrid ItemsSource="{Binding FrameRecords}"
                       SelectedItem="{Binding SelectedFrame}"
                       AutoGenerateColumns="False" IsReadOnly="True"
@@ -268,14 +230,15 @@
                 <DataGridTextColumn Header="Fields" Binding="{Binding FieldsSummary}" Width="Auto"
                                     MinWidth="140" />
                 <DataGridTextColumn Header="Raw" Binding="{Binding RawPreview}" Width="*"
-                                    MinWidth="220" FontFamily="Menlo,Consolas,monospace" />
+                                    MinWidth="220"
+                                    FontFamily="Menlo,Consolas,monospace" />
               </DataGrid.Columns>
             </DataGrid>
           </DockPanel>
         </Border>
 
-        <Border Grid.Row="2" Classes="card" Padding="16">
-          <Grid ColumnDefinitions="3*,14,2*">
+        <Border Grid.Row="2" Classes="card" Padding="14">
+          <Grid ColumnDefinitions="3*,12,2*">
             <DockPanel Grid.Column="0">
               <TextBlock DockPanel.Dock="Top" Text="Selected frame" Classes="fieldLabel" />
               <ListBox ItemsSource="{Binding DetailRows}" Padding="2">
@@ -312,14 +275,15 @@
       </Grid>
 
       <!-- Raw dual hex+ASCII dump -->
-      <Border Classes="card" Padding="16" IsVisible="{Binding IsRawView}">
+      <Border Classes="card" Padding="14" IsVisible="{Binding IsRawView}">
         <DockPanel>
-          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="18"
-                      Margin="2,0,2,10" VerticalAlignment="Center">
-            <TextBlock Text="Raw stream" Classes="serifHeader" VerticalAlignment="Center" />
-            <TextBlock Text="time · dir · offset · hex · ascii" Classes="mono muted"
-                       VerticalAlignment="Center" />
-          </StackPanel>
+          <Border DockPanel.Dock="Top" Classes="softCard" Padding="12,6" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Spacing="24">
+              <TextBlock Text="Raw stream" Classes="sectionTitle" VerticalAlignment="Center" />
+              <TextBlock Text="time · dir · offset · hex · ascii" Classes="muted"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+          </Border>
           <DockPanel>
             <Border DockPanel.Dock="Bottom" MinHeight="22" Padding="8,2">
               <StackPanel Orientation="Horizontal" Spacing="14"

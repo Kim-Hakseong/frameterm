@@ -7,11 +7,11 @@ namespace Ft.App.ViewModels;
 /// <summary>Frame-list row: preformatted columns + status/highlight brushes.</summary>
 public sealed class FrameRecordViewModel
 {
-    private static readonly IBrush OkBrush = new SolidColorBrush(Color.Parse("#201F1C"));
-    private static readonly IBrush FailBrush = new SolidColorBrush(Color.Parse("#D70027"));
-    private static readonly IBrush NoneBrush = new SolidColorBrush(Color.Parse("#6F6E66"));
-    private static readonly IBrush RxBrush = new SolidColorBrush(Color.Parse("#1D4ED8"));
-    private static readonly IBrush TxBrush = new SolidColorBrush(Color.Parse("#C85A3E"));
+    private static readonly IBrush OkBrush = new SolidColorBrush(Color.Parse("#3E7A4E"));
+    private static readonly IBrush FailBrush = new SolidColorBrush(Color.Parse("#9C2030"));
+    private static readonly IBrush NoneBrush = new SolidColorBrush(Color.Parse("#8B897F"));
+    private static readonly IBrush RxBrush = new SolidColorBrush(Color.Parse("#2C4A6E"));
+    private static readonly IBrush TxBrush = new SolidColorBrush(Color.Parse("#7A1020"));
     private static readonly IBrush Transparent = new SolidColorBrush(Colors.Transparent);
 
     public FrameRecord Record { get; }

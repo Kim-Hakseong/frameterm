@@ -100,8 +100,8 @@ public class FrameViewSmokeTests
         var vm = window.ViewModel;
 
         await vm.ToggleDemoAsync();
-        // seq % 7 == 0 frames carry status=1 → highlight rule #D70027.
-        await WaitUntilAsync(() => vm.FrameRecords.Any(f => f.Record.Color == "#D70027"));
+        // seq % 7 == 0 frames carry status=1 → highlight rule #9C2030.
+        await WaitUntilAsync(() => vm.FrameRecords.Any(f => f.Record.Color == "#9C2030"));
 
         await vm.DisconnectAsync();
         UiTest.FlushAndClose(window);

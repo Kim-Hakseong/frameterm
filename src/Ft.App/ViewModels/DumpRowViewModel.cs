@@ -7,8 +7,8 @@ namespace Ft.App.ViewModels;
 /// <summary>Display wrapper for a dump row: preformatted columns + direction brush.</summary>
 public sealed class DumpRowViewModel(DumpRow row)
 {
-    private static readonly IBrush RxBrush = new SolidColorBrush(Color.Parse("#1D4ED8"));
-    private static readonly IBrush TxBrush = new SolidColorBrush(Color.Parse("#C85A3E"));
+    private static readonly IBrush RxBrush = new SolidColorBrush(Color.Parse("#2C4A6E"));
+    private static readonly IBrush TxBrush = new SolidColorBrush(Color.Parse("#7A1020"));
 
     public string Time { get; } = row.Time;
     public string Dir { get; } = row.Direction == FrameDirection.Rx ? "RX" : "TX";
