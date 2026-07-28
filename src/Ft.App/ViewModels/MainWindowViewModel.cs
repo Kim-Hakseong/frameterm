@@ -318,7 +318,7 @@ public partial class MainWindowViewModel : ObservableObject
         ],
         Highlights =
         [
-            new HighlightConfig { Field = "status", Op = "!=", Value = 0, Color = "#9C2030" },
+            new HighlightConfig { Field = "status", Op = "!=", Value = 0, Color = "#D70027" },
         ],
     };
 

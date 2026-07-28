@@ -99,11 +99,11 @@
       </WrapPanel>
     </Grid>
 
-    <!-- Dashboard stat strip: big mono counters, RX tile carries the green glow -->
+    <!-- Dashboard stat strip: big mono counters, RX tile carries the spectrum glow -->
     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,14,*,14,*,14,*" Margin="0,0,0,16">
       <Border Grid.Column="0" Classes="statTile">
         <Panel>
-          <Border CornerRadius="12" Background="{StaticResource GreenGlowBrush}"
+          <Border CornerRadius="12" Background="{StaticResource SpectrumGlowBrush}"
                   Margin="-16,-12" />
           <StackPanel>
             <TextBlock Text="RX BYTES" Classes="statLabel" />

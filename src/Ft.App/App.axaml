@@ -4,14 +4,14 @@
              RequestedThemeVariant="Light">
 
   <Application.Resources>
-    <!-- Palette: TestBench.tools — deep-green accent over warm paper -->
-    <Color x:Key="SystemAccentColor">#047A4E</Color>
-    <Color x:Key="SystemAccentColorDark1">#046A44</Color>
-    <Color x:Key="SystemAccentColorDark2">#035A3A</Color>
-    <Color x:Key="SystemAccentColorDark3">#034A30</Color>
-    <Color x:Key="SystemAccentColorLight1">#0B8F5E</Color>
-    <Color x:Key="SystemAccentColorLight2">#3FA97E</Color>
-    <Color x:Key="SystemAccentColorLight3">#8FCBB4</Color>
+    <!-- Palette: TestBench.tools — warm coral accent + pastel-spectrum glow over paper -->
+    <Color x:Key="SystemAccentColor">#D2694C</Color>
+    <Color x:Key="SystemAccentColorDark1">#C25A3E</Color>
+    <Color x:Key="SystemAccentColorDark2">#B04A32</Color>
+    <Color x:Key="SystemAccentColorDark3">#9E3E28</Color>
+    <Color x:Key="SystemAccentColorLight1">#E0805F</Color>
+    <Color x:Key="SystemAccentColorLight2">#EBA084</Color>
+    <Color x:Key="SystemAccentColorLight3">#F3C4B0</Color>
 
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F1F0EC" />
 
@@ -21,18 +21,21 @@
     <SolidColorBrush x:Key="InkHoverBrush" Color="#33322D" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#201F1C" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6F6E66" />
-    <SolidColorBrush x:Key="AccentBrush" Color="#047A4E" />
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#E8F1EB" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#D2694C" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#F7ECE6" />
     <SolidColorBrush x:Key="LineBrush" Color="#D8D6CE" />
     <SolidColorBrush x:Key="ErrorBrush" Color="#D70027" />
-    <SolidColorBrush x:Key="OkBrush" Color="#047A4E" />
+    <SolidColorBrush x:Key="OkBrush" Color="#201F1C" />
     <SolidColorBrush x:Key="RxBrush" Color="#1D4ED8" />
-    <SolidColorBrush x:Key="TxBrush" Color="#047A4E" />
+    <SolidColorBrush x:Key="TxBrush" Color="#C85A3E" />
 
-    <!-- One low-opacity green glow — the brand's atmospheric accent moment -->
-    <LinearGradientBrush x:Key="GreenGlowBrush" StartPoint="0%,0%" EndPoint="75%,110%">
-      <GradientStop Color="#2A047A4E" Offset="0" />
-      <GradientStop Color="#00047A4E" Offset="0.7" />
+    <!-- Soft pastel-spectrum wash — the atmospheric accent moment (site hero palette) -->
+    <LinearGradientBrush x:Key="SpectrumGlowBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#40F0A9C0" Offset="0" />
+      <GradientStop Color="#32F6C69A" Offset="0.35" />
+      <GradientStop Color="#28F3E3A8" Offset="0.6" />
+      <GradientStop Color="#1EBFE6C8" Offset="0.82" />
+      <GradientStop Color="#00BCD6F0" Offset="1" />
     </LinearGradientBrush>
 
     <!-- Fluent resource overrides (tab pill selection, checked toggles) -->
@@ -40,9 +43,9 @@
     <SolidColorBrush x:Key="TabItemHeaderForegroundSelected" Color="#FFFFFF" />
     <SolidColorBrush x:Key="TabItemHeaderForegroundSelectedPointerOver" Color="#FFFFFF" />
     <SolidColorBrush x:Key="TabItemHeaderForegroundSelectedPressed" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#047A4E" />
-    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#0B8F5E" />
-    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#035A3A" />
+    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#C85A3E" />
+    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#D2694C" />
+    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#B04A32" />
     <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#FFFFFF" />
     <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#FFFFFF" />
     <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#FFFFFF" />
