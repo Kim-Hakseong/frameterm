@@ -296,6 +296,15 @@
       <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
       <Setter Property="FontSize" Value="12" />
     </Style>
+    <!-- Selected row: same pink→orange gradient as the checked toggles (not a flat tint) -->
+    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{StaticResource AccentGradientBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Fill" Value="{StaticResource AccentGradientBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
 
     <Style Selector="ListBox">
       <Setter Property="Background" Value="Transparent" />
