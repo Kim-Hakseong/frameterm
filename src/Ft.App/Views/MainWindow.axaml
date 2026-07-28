@@ -146,17 +146,21 @@
       </StackPanel>
     </Border>
 
-    <!-- Bottom status line + logo/copyright -->
+    <!-- Bottom status line + wordmark/copyright -->
     <Border DockPanel.Dock="Bottom" Padding="12,8,12,2">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="10"
                     VerticalAlignment="Center">
           <TextBlock Text="{Binding TrialStatusText}" Classes="muted" FontSize="11"
                      VerticalAlignment="Center" />
-          <TextBlock Text="© 2026 NEXYS Co., Ltd. All rights reserved." Classes="muted"
+          <TextBlock Text="© 2026 TestBench.tools · All rights reserved." Classes="muted"
                      FontSize="11" VerticalAlignment="Center" />
-          <Image Source="/Assets/nexys-logo.png" Height="14" VerticalAlignment="Center"
-                 RenderOptions.BitmapInterpolationMode="HighQuality" />
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Text="TestBench" Classes="wordmark" FontSize="16"
+                       Foreground="{StaticResource InkBrush}" VerticalAlignment="Center" />
+            <TextBlock Text=".tools" Classes="wordmark" FontSize="16"
+                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+          </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="18">
           <TextBlock Text="{Binding PortSummary}" Classes="muted" />
