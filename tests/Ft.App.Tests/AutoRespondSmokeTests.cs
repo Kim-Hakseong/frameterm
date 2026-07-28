@@ -43,12 +43,13 @@ public class AutoRespondSmokeTests
     }
 
     [AvaloniaFact]
-    public async Task TrialStatus_ShownInFooter()
+    public async Task Connecting_DoesNotShowTrialMessaging()
     {
+        // The product is not trialware — nothing in the shell may advertise one.
         var window = new MainWindow();
         window.Show();
-        // Either an active trial, expired trial, or a license — never empty.
-        Assert.False(string.IsNullOrEmpty(window.ViewModel.TrialStatusText));
+        Assert.DoesNotContain("Trial", window.ViewModel.ConnectionStatus, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Trial", window.ViewModel.StatsText, StringComparison.OrdinalIgnoreCase);
         await Task.CompletedTask;
         UiTest.FlushAndClose(window);
     }

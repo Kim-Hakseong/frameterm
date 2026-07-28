@@ -6,7 +6,7 @@ namespace Ft.Core.Tests.Checksum;
 
 /// <summary>
 /// DESIGN §8.1 golden vectors — validated against the public CRC catalogue.
-/// Do not modify or delete (CLAUDE.md §4-1).
+/// Do not modify or delete.
 /// </summary>
 public class ChecksumGoldenTests
 {

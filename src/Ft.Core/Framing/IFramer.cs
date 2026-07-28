@@ -3,7 +3,7 @@ namespace Ft.Core.Framing;
 /// <summary>
 /// Incremental stream framer. Contract: the emitted frame sequence must be
 /// identical no matter how the input stream is chunked (partial-delivery
-/// invariance, CLAUDE.md §4-3). Implementations keep internal buffer state.
+/// invariance). Implementations keep internal buffer state.
 /// </summary>
 public interface IFramer
 {

@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Ft.App.Views.HelpWindow"
+        x:Name="Root"
+        Title="Quick guide"
+        Icon="/Assets/app.ico"
+        Width="640" Height="720"
+        MinWidth="480" MinHeight="420"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel Margin="18,16">
+
+    <!-- Header: heading + language toggle -->
+    <DockPanel DockPanel.Dock="Top" Margin="2,0,2,12">
+      <Button DockPanel.Dock="Right" Click="OnToggleLanguageClick" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <PathIcon Data="{StaticResource IconRefresh}" />
+          <TextBlock x:Name="ToggleText" Text="한국어" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <TextBlock x:Name="HeadingText" Classes="serifHeader" FontSize="22"
+                 VerticalAlignment="Center" Text="FrameTerm quick guide" />
+    </DockPanel>
+
+    <!-- Footer: hint + close -->
+    <Border DockPanel.Dock="Bottom" Padding="2,12,2,0">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Classes="accent" Click="OnCloseClick">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <PathIcon Data="{StaticResource IconClose}" />
+            <TextBlock x:Name="CloseText" Text="Close" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <TextBlock x:Name="FootnoteText" Classes="muted" VerticalAlignment="Center"
+                   TextWrapping="Wrap" Margin="0,0,12,0" />
+      </DockPanel>
+    </Border>
+
+    <Border Classes="card" Padding="8">
+      <ScrollViewer Padding="18,16">
+        <StackPanel x:Name="ContentPanel" Spacing="0" Margin="0,0,14,10" />
+      </ScrollViewer>
+    </Border>
+
+  </DockPanel>
+</Window>

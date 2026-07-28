@@ -7,7 +7,7 @@ namespace Ft.Core.Tests.Framing;
 
 /// <summary>
 /// DESIGN §8.2 golden vectors. Every case runs twice: whole-stream push and
-/// 1-byte-at-a-time push — results must be identical (CLAUDE.md §4-3).
+/// 1-byte-at-a-time push — results must be identical.
 /// Do not modify or delete.
 /// </summary>
 public class FramingGoldenTests

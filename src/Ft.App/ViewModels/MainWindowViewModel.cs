@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 using Ft.App.Services;
 using Ft.Core.Compose;
 using Ft.Core.Dump;
-using Ft.Core.Licensing;
 using Ft.Core.Logging;
 using Ft.Core.Parsing;
 using Ft.Core.Pipeline;
@@ -99,44 +98,6 @@ public partial class MainWindowViewModel : ObservableObject
     private BytePattern? _compiledFilter;
     private AutoResponder? _autoResponder;
     private readonly List<FrameRecordViewModel> _allFrames = [];
-
-    /// <summary>
-    /// License verification public key. Skeleton: RFC 8032 test-vector key so
-    /// the whole path is exercisable; replace with the production key (and
-    /// keep the signing seed offline) before selling (M10+).
-    /// </summary>
-    private const string LicensePublicKeyHex =
-        "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
-
-    [ObservableProperty]
-    private string _trialStatusText = string.Empty;
-
-    public MainWindowViewModel()
-    {
-        EvaluateTrial();
-    }
-
-    private void EvaluateTrial()
-    {
-        string dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FrameTerm");
-        string? licenseKey = null;
-        string licensePath = Path.Combine(dir, "license.key");
-        try
-        {
-            if (File.Exists(licensePath)) licenseKey = File.ReadAllText(licensePath);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            // Unreadable license file → treated as unlicensed trial.
-        }
-
-        var manager = new TrialManager(
-            Path.Combine(dir, "trial.dat"),
-            Convert.FromHexString(LicensePublicKeyHex),
-            SystemTimeSource.Instance);
-        TrialStatusText = manager.Evaluate(licenseKey).Detail;
-    }
 
     public ObservableCollection<DumpRowViewModel> DumpRows { get; } = [];
     public ObservableCollection<FrameRecordViewModel> FrameRecords { get; } = [];

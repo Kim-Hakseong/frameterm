@@ -9,6 +9,8 @@ namespace Ft.App.Views;
 
 public partial class MainWindow : Window
 {
+    private HelpWindow? _helpWindow;
+
     public MainWindowViewModel ViewModel { get; }
 
     public MainWindow()
@@ -16,6 +18,19 @@ public partial class MainWindow : Window
         InitializeComponent();
         ViewModel = new MainWindowViewModel();
         DataContext = ViewModel;
+    }
+
+    private void OnHelpClick(object? sender, RoutedEventArgs e)
+    {
+        if (_helpWindow is { IsVisible: true })
+        {
+            _helpWindow.Activate();
+            return;
+        }
+
+        _helpWindow = new HelpWindow();
+        _helpWindow.Closed += (_, _) => _helpWindow = null;
+        _helpWindow.Show(this);
     }
 
     private async void OnConnectClick(object? sender, RoutedEventArgs e)

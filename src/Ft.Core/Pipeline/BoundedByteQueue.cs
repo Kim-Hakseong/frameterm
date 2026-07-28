@@ -3,7 +3,7 @@ namespace Ft.Core.Pipeline;
 /// <summary>
 /// Bounded FIFO of byte chunks between the reader task and the processor.
 /// When full, the oldest chunk is dropped and counted — backpressure never
-/// blocks the serial reader (CLAUDE.md §3).
+/// blocks the serial reader.
 /// </summary>
 public sealed class BoundedByteQueue(int capacity = 1024)
 {
