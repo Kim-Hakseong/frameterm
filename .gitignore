@@ -3,3 +3,4 @@ obj/
 publish/
 *.user
 .DS_Store
+RALPH_LOG.md
