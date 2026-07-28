@@ -42,6 +42,19 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _statsText = "RX 0 B · TX 0 B · frames 0 · errors 0 · drops 0";
 
+    // Individual counters surfaced for the dashboard stat tiles (display only).
+    [ObservableProperty]
+    private string _rxText = "0";
+
+    [ObservableProperty]
+    private string _txText = "0";
+
+    [ObservableProperty]
+    private string _framesText = "0";
+
+    [ObservableProperty]
+    private string _errorsText = "0";
+
     [ObservableProperty]
     private string _lastError = string.Empty;
 
@@ -569,5 +582,9 @@ public partial class MainWindowViewModel : ObservableObject
         long tx = _pipeline?.TxBytes ?? 0;
         long drops = _pipeline?.DropCount ?? 0;
         StatsText = $"RX {rx} B · TX {tx} B · frames {_frameCount} · errors {_errorCount} · drops {drops}";
+        RxText = rx.ToString("N0");
+        TxText = tx.ToString("N0");
+        FramesText = _frameCount.ToString("N0");
+        ErrorsText = _errorCount.ToString("N0");
     }
 }

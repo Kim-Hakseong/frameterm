@@ -29,6 +29,12 @@
     <SolidColorBrush x:Key="RxBrush" Color="#1D4ED8" />
     <SolidColorBrush x:Key="TxBrush" Color="#047A4E" />
 
+    <!-- One low-opacity green glow — the brand's atmospheric accent moment -->
+    <LinearGradientBrush x:Key="GreenGlowBrush" StartPoint="0%,0%" EndPoint="75%,110%">
+      <GradientStop Color="#2A047A4E" Offset="0" />
+      <GradientStop Color="#00047A4E" Offset="0.7" />
+    </LinearGradientBrush>
+
     <!-- Fluent resource overrides (tab pill selection, checked toggles) -->
     <SolidColorBrush x:Key="TabItemHeaderSelectedPipeFill" Color="Transparent" />
     <SolidColorBrush x:Key="TabItemHeaderForegroundSelected" Color="#FFFFFF" />
@@ -102,6 +108,42 @@
     <!-- Brand wordmark — Instrument Serif (matches the TestBench.tools site) -->
     <Style Selector="TextBlock.wordmark">
       <Setter Property="FontFamily" Value="avares://Ft.App/Assets/Fonts/InstrumentSerif-Regular.ttf#Instrument Serif" />
+    </Style>
+
+    <!-- Serif section headers, echoing the site's Instrument Serif rhythm -->
+    <Style Selector="TextBlock.serifHeader">
+      <Setter Property="FontFamily" Value="avares://Ft.App/Assets/Fonts/InstrumentSerif-Regular.ttf#Instrument Serif" />
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+    </Style>
+
+    <!-- Status pill (connection) -->
+    <Style Selector="Border.statusPill">
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Background" Value="{StaticResource CardBrush}" />
+      <Setter Property="Padding" Value="10,5" />
+    </Style>
+
+    <!-- Dashboard stat tiles — big mono numbers over a small mono label -->
+    <Style Selector="Border.statTile">
+      <Setter Property="Background" Value="{StaticResource CardBrush}" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="16,12" />
+    </Style>
+    <Style Selector="TextBlock.statLabel">
+      <Setter Property="FontFamily" Value="Menlo,Consolas,monospace" />
+      <Setter Property="FontSize" Value="10.5" />
+      <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+      <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+    <Style Selector="TextBlock.statValue">
+      <Setter Property="FontFamily" Value="Menlo,Consolas,monospace" />
+      <Setter Property="FontSize" Value="27" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
     </Style>
 
     <!-- Small grey labels above inputs -->
