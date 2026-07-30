@@ -157,7 +157,7 @@
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="10"
                     VerticalAlignment="Center">
-          <TextBlock Text="© 2026 NEXYS Co., Ltd. All rights reserved." Classes="muted"
+          <TextBlock Text="© 2026 NEXYS Co., Ltd. · MIT licensed" Classes="muted"
                      FontSize="11" VerticalAlignment="Center" />
           <Image Source="/Assets/nexys-logo.png" Height="14" VerticalAlignment="Center"
                  RenderOptions.BitmapInterpolationMode="HighQuality" />
